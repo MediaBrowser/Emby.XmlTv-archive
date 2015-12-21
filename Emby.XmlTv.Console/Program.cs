@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 using Emby.XmlTv.Classes;
+using Emby.XmlTv.Console.Classes;
 
 using MediaBrowser.Model.Dto;
 
@@ -15,35 +17,57 @@ namespace Emby.XmlTv.Console
         {
             var filename = @"C:\Program Files (x86)\XMLTV GUI\data.xml";
 
-            if (args.Count() == 1 && File.Exists(args[0]))
+            if (args.Length == 1 && File.Exists(args[0]))
             {
                 filename = args[0];
             }
 
-            var reader = new XmlTvReader(filename);
-            ReadOutChannels(reader);
+            var timer = Stopwatch.StartNew();
+            System.Console.WriteLine("Running XMLTv Parsing");
 
+            // var resultsFile = $"{Path.GetDirectoryName(filename)}\\{Path.GetFileNameWithoutExtension(filename)}_Results_{DateTime.UtcNow:hhmmss}.txt";
+            var resultsFile = $"C:\\Temp\\{Path.GetFileNameWithoutExtension(filename)}_Results_{DateTime.UtcNow:hhmmss}.txt";
+
+            ReadSourceXmlTvFile(filename, resultsFile).Wait();
+
+            System.Console.WriteLine($"Completed in {timer.Elapsed:g} - press any key to open the file...");
             System.Console.ReadKey();
+
+            Process.Start(resultsFile);
         }
 
-        public static void ReadOutChannels(XmlTvReader reader)
+        public static async Task ReadSourceXmlTvFile(string filename, string resultsFile)
         {
-            foreach (var channel in reader.GetChannels())
+            System.Console.WriteLine($"Writing to file: {resultsFile}");
+
+            using (var resultsFileStream = new StreamWriter(resultsFile) { AutoFlush = true })
             {
-                System.Console.WriteLine($"****** START {channel.Id} - {channel.Name} ******");
-                ReadOutChannelProgrammes(reader, channel);
-                System.Console.WriteLine($"****** END   {channel.Id} - {channel.Name} ******");
+                var reader = new XmlTvReader(filename);
+                await ReadOutChannels(reader, resultsFileStream);
+
+                resultsFileStream.Close();
             }
         }
 
-        private static void ReadOutChannelProgrammes(XmlTvReader reader, NameIdPair channel)
+        public static async Task ReadOutChannels(XmlTvReader reader, StreamWriter resultsFileStream)
         {
-            var startDate = new DateTime(2015, 11, 28);
-            var endDate = new DateTime(2015, 11, 29);
+            foreach (var channel in reader.GetChannels())
+            {
+                resultsFileStream.Write(channel.GetChannelHeader());
+                await ReadOutChannelProgrammes(reader, channel, resultsFileStream);
+            }
+        }
+
+        private static async Task ReadOutChannelProgrammes(XmlTvReader reader, NameIdPair channel, StreamWriter resultsFileStream)
+        {
+            //var startDate = new DateTime(2015, 11, 28);
+            //var endDate = new DateTime(2015, 11, 29);
+            var startDate = DateTime.MinValue;
+            var endDate = DateTime.MaxValue;
 
             foreach (var programme in reader.GetProgrammes(null, channel.Id, null, startDate, endDate, new CancellationToken()))
             {
-                System.Console.WriteLine($"{programme.Name} - Episode: {programme.EpisodeNumber} - Subtitle: {programme.EpisodeTitle} - Genres: {String.Join(", ", programme.Genres)}");
+                await resultsFileStream.WriteLineAsync(programme.GetProgrammeDetail());
             }
         }
     }
