@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Xml;
 
-using MediaBrowser.Controller.LiveTv;
-using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.LiveTv;
+using Emby.XmlTv.Entities;
 
 using Patterns.Logging;
 
@@ -40,7 +39,7 @@ namespace Emby.XmlTv.Classes
         /// Gets the channels.
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<NameIdPair> GetChannels()
+        public IEnumerable<XmlTvChannel> GetChannels()
         {
             var reader = new XmlTextReader(_fileName);
 
@@ -61,7 +60,7 @@ namespace Emby.XmlTv.Classes
             }
         }
 
-        public NameIdPair GetChannel(XmlReader reader)
+        public XmlTvChannel GetChannel(XmlReader reader)
         {
             var id = reader.GetAttribute("id");
             
@@ -90,13 +89,11 @@ namespace Emby.XmlTv.Classes
                 return null;
             }
 
-            return new NameIdPair() { Id = id, Name = displayName };
+            return new XmlTvChannel() { Id = id, Name = displayName };
         }
 
-        public IEnumerable<ProgramInfo> GetProgrammes(
-            ListingsProviderInfo info,
+        public IEnumerable<XmlTvProgram> GetProgrammes(
             string channelNumber,
-            string channelName,
             DateTime startDateUtc,
             DateTime endDateUtc,
             CancellationToken cancellationToken)
@@ -125,10 +122,10 @@ namespace Emby.XmlTv.Classes
             }
         }
 
-        public ProgramInfo GetProgramme(XmlReader reader, string channelNumber, DateTime startDateUtc, DateTime endDateUtc)
+        public XmlTvProgram GetProgramme(XmlReader reader, string channelNumber, DateTime startDateUtc, DateTime endDateUtc)
         {
             
-            var result = new ProgramInfo();
+            var result = new XmlTvProgram();
 
             PopulateHeader(reader, result);
 
@@ -171,18 +168,18 @@ namespace Emby.XmlTv.Classes
                         case "episode-num":
                             ProcessEpisodeNum(xmlProg, result);
                             break;
-                        //case "date": // Copyright date
-                        //    xmlProg.Skip();
-                        //    break;
-                        //case "star-rating": // Community Rating
-                        //    ProcessStarRating(xmlProg, result);
-                        //    break;
+                        case "date": // Copyright date
+                            ProcessCopyrightDate(xmlProg, result);
+                            break;
+                        case "star-rating": // Community Rating
+                            ProcessStarRating(xmlProg, result);
+                            break;
                         //case "rating": // Certification Rating
                         //    xmlProg.Skip();
                         //    break;
-                        //case "credits":
-                        //    ProcessCredits(xmlProg, result);
-                        //    break;
+                        case "credits":
+                            ProcessCredits(xmlProg, result);
+                            break;
                         default:
                             // unknown, skip entire node
                             xmlProg.Skip();
@@ -197,24 +194,96 @@ namespace Emby.XmlTv.Classes
             return result;
         }
 
-        public void ProcessCredits(XmlReader xmlProg, ProgramInfo result)
+        private void ProcessCopyrightDate(XmlReader xmlProg, XmlTvProgram result)
         {
-            //var creditsXml = xmlProg.ReadSubtree();
-            //creditsXml.ReadStartElement();
-
-            //while (!xmlProg.EOF)
-            //{
-                
-            //}
-            xmlProg.Skip();
+            var startValue = xmlProg.ReadElementContentAsString();
+            if (string.IsNullOrEmpty(startValue))
+            {
+                // Log.Error("  programme#{0} doesnt contain a start date", iChannel);
+                result.ProductionYear = null;
+            }
+            else
+            {
+                var copyrightDate = ParseDate(startValue);
+                if (copyrightDate != null)
+                {
+                    result.ProductionYear = copyrightDate.Value.Year;
+                }
+            }
         }
 
-        public void ProcessStarRating(XmlReader reader, ProgramInfo result)
+        public void ProcessCredits(XmlReader xmlProg, XmlTvProgram result)
         {
+            var creditsXml = xmlProg.ReadSubtree();
+            creditsXml.ReadStartElement();
+
+            while (!creditsXml.EOF)
+            {
+                if (creditsXml.NodeType == XmlNodeType.Element)
+                {
+                    XmlTvCredit credit = null;
+                    switch (xmlProg.Name)
+                    {
+                        case "director":
+                            credit = new XmlTvCredit() { Type = XmlTvCreditType.Director };
+                            break;
+                        case "actor":
+                            credit = new XmlTvCredit() { Type = XmlTvCreditType.Actor };
+                            break;
+                        case "writer":
+                            credit = new XmlTvCredit() { Type = XmlTvCreditType.Writer };
+                            break;
+                        case "adapter":
+                            credit = new XmlTvCredit() { Type = XmlTvCreditType.Adapter };
+                            break;
+                        case "producer":
+                            credit = new XmlTvCredit() { Type = XmlTvCreditType.Producer };
+                            break;
+                        case "composer":
+                            credit = new XmlTvCredit() { Type = XmlTvCreditType.Composer };
+                            break;
+                        case "editor":
+                            credit = new XmlTvCredit() { Type = XmlTvCreditType.Editor };
+                            break;
+                        case "presenter":
+                            credit = new XmlTvCredit() { Type = XmlTvCreditType.Presenter };
+                            break;
+                        case "commentator":
+                            credit = new XmlTvCredit() { Type = XmlTvCreditType.Commentator };
+                            break;
+                        case "guest":
+                            credit = new XmlTvCredit() { Type = XmlTvCreditType.Guest };
+                            break;
+                    }
+
+                    if (credit != null)
+                    {
+                        credit.Name = xmlProg.ReadElementContentAsString();
+                        result.Credits.Add(credit);
+                    }
+                    else
+                    {
+                        creditsXml.Skip();
+                    }
+                }
+                else
+                    creditsXml.Read();
+            }
+        }
+
+        public void ProcessStarRating(XmlReader reader, XmlTvProgram result)
+        {
+            /*
+             <star-rating>
+              <value>3/3</value>
+            </star-rating>
+            */
+
+
             reader.Skip();
         }
 
-        public void ProcessEpisodeNum(XmlReader reader, ProgramInfo result)
+        public void ProcessEpisodeNum(XmlReader reader, XmlTvProgram result)
         {
             /*
             <episode-num system="dd_progid">EP00003026.0666</episode-num>
@@ -240,7 +309,7 @@ namespace Emby.XmlTv.Classes
             }
         }
 
-        public void ParseEpisodeDataForOnScreen(XmlReader reader, ProgramInfo result)
+        public void ParseEpisodeDataForOnScreen(XmlReader reader, XmlTvProgram result)
         {
             //// example: 'Episode #FFEE' 
             //serEpNum = ConvertHTMLToAnsi(nodeEpisodeNum);
@@ -261,27 +330,55 @@ namespace Emby.XmlTv.Classes
             }
         }
 
-        public void ParseEpisodeDataForXmlTvNs(XmlReader reader, ProgramInfo result)
+        public void ParseEpisodeDataForXmlTvNs(XmlReader reader, XmlTvProgram result)
         {
             var value = reader.ReadElementContentAsString();
-            // value = HttpUtility.HtmlDecode(value);
             value = value.Replace(" ", "");
 
-            // Episode
+            // Episode details
             var components = value.Split(new[] { "." }, StringSplitOptions.None);
-            if (!String.IsNullOrEmpty(components[1]))
+
+            if (!string.IsNullOrEmpty(components[0]))
             {
                 // Handle either "5/12" or "5"
-                var episodeComponents = components[1].Split(new [] { "/" }, StringSplitOptions.None);
-                result.EpisodeNumber = Int32.Parse(episodeComponents[0]) + 1; // handle the zero basing!
+                var seriesComponents = components[0].Split(new[] { "/" }, StringSplitOptions.None);
+                result.Episode.Series = int.Parse(seriesComponents[0]) + 1; // handle the zero basing!
+                if (seriesComponents.Count() == 2)
+                {
+                    result.Episode.SeriesCount = int.Parse(seriesComponents[1]) + 1; // handle the zero basing!
+                }
+            }
+
+            if (!string.IsNullOrEmpty(components[1]))
+            {
+                // Handle either "5/12" or "5"
+                var episodeComponents = components[1].Split(new[] { "/" }, StringSplitOptions.None);
+                result.Episode.Episode = int.Parse(episodeComponents[0]) + 1; // handle the zero basing!
+                if (episodeComponents.Count() == 2)
+                {
+                    result.Episode.EpisodeCount = int.Parse(episodeComponents[1]) + 1; // handle the zero basing!
+                }
+
+            }
+
+            if (!string.IsNullOrEmpty(components[2]))
+            {
+                // Handle either "5/12" or "5"
+                var partComponents = components[1].Split(new [] { "/" }, StringSplitOptions.None);
+                result.Episode.Part = int.Parse(partComponents[0]) + 1; // handle the zero basing!
+                if (partComponents.Count() == 2)
+                {
+                    result.Episode.PartCount = int.Parse(partComponents[1]) + 1; // handle the zero basing!
+                }
+
             }
         }
 
-        public void ProcessPreviouslyShown(XmlReader reader, ProgramInfo result)
+        public void ProcessPreviouslyShown(XmlReader reader, XmlTvProgram result)
         {
             // <previously-shown start="20070708000000" />
             var value = reader.ReadElementContentAsString();
-            if (!String.IsNullOrEmpty(value))
+            if (!string.IsNullOrEmpty(value))
             {
                 // TODO: this may not be correct = validate it
                 result.OriginalAirDate = ParseDate(value);
@@ -292,7 +389,7 @@ namespace Emby.XmlTv.Classes
             }
         }
 
-        public void ProcessCategory(XmlReader reader, ProgramInfo result)
+        public void ProcessCategory(XmlReader reader, XmlTvProgram result)
         {
             /*
             <category lang="en">News</category>
@@ -302,28 +399,27 @@ namespace Emby.XmlTv.Classes
             result.Genres.Add(reader.ReadElementContentAsString());
         }
 
-        public void ProcessSubTitle(XmlReader reader, ProgramInfo result)
+        public void ProcessSubTitle(XmlReader reader, XmlTvProgram result)
         {
             /*
             <sub-title lang="en">Gino&apos;s Italian Escape - Islands in the Sun: Southern Sardinia Celebrate the Sea</sub-title>
             <sub-title lang="en">8782</sub-title>
             */
-            result.EpisodeTitle = reader.ReadElementContentAsString();
+            result.Episode.Title = reader.ReadElementContentAsString();
         }
 
-        public void ProcessDescription(XmlReader reader, ProgramInfo result)
+        public void ProcessDescription(XmlReader reader, XmlTvProgram result)
         {
-
             result.ShortOverview = reader.ReadElementContentAsString();
         }
 
-        public void ProcessTitleNode(XmlReader reader, ProgramInfo result)
+        public void ProcessTitleNode(XmlReader reader, XmlTvProgram result)
         {
             // <title lang="en">Gino&apos;s Italian Escape</title>
             result.Name = reader.ReadElementContentAsString();
         }
         
-        private void PopulateHeader(XmlReader reader, ProgramInfo result)
+        private void PopulateHeader(XmlReader reader, XmlTvProgram result)
         {
             result.ChannelId = reader.GetAttribute("channel");
 
@@ -335,7 +431,7 @@ namespace Emby.XmlTv.Classes
             }
             else
             {
-                result.StartDate = ParseDate(startValue);
+                result.StartDate = ParseDate(startValue).Value;
             }
 
             
@@ -347,35 +443,113 @@ namespace Emby.XmlTv.Classes
             }
             else
             {
-                result.EndDate = ParseDate(endValue);
+                result.EndDate = ParseDate(endValue).Value;
             }            
         }
 
-        private DateTime ParseDate(string startValue)
+        public DateTime? ParseDate(string dateValue)
         {
-            // TODO: Determine the date format and parse accordingly
-            return ParseLongToDate(long.Parse(startValue.Substring(0, 14)));
+            /*
+            All dates and times in this DTD follow the same format, loosely based
+            on ISO 8601.  They can be 'YYYYMMDDhhmmss' or some initial
+            substring, for example if you only know the year and month you can
+            have 'YYYYMM'.  You can also append a timezone to the end; if no
+            explicit timezone is given, UTC is assumed.  Examples:
+            '200007281733 BST', '200209', '19880523083000 +0300'.  (BST == +0100.)
+            */
+
+            DateTime? result = null;
+
+            if (!string.IsNullOrEmpty(dateValue))
+            {
+                // TODO: Determine the date format and parse accordingly
+                var dateComponents = dateValue.Split(Char.Parse(" "));
+
+                if (!string.IsNullOrEmpty(dateComponents[0]))
+                {
+                    // Take the numerics only
+                    var numericDate = new string(dateComponents[0].TakeWhile(char.IsDigit).ToArray());
+                    result = ParseDateComponent(numericDate);
+                }
+            }
+
+            return result;
         }
 
-        public DateTime ParseLongToDate(long ldate)
+        public DateTime? ParseDateComponent(string value)
         {
-            try
+            // Validate that all the values are digits
+            if (value.Length != value.TakeWhile(char.IsDigit).ToArray().Length)
             {
-                if (ldate < 0) return DateTime.MinValue;
-                ldate /= 100L;
-                var minute = (int)(ldate % 100L);
-                ldate /= 100L;
-                var hour = (int)(ldate % 100L);
-                ldate /= 100L;
-                var day = (int)(ldate % 100L);
-                ldate /= 100L;
-                var month = (int)(ldate % 100L);
-                ldate /= 100L;
-                var year = (int)ldate;
-                return new DateTime(year, month, day, hour, minute, 0, 0);
+                return null;
             }
-            catch (Exception) { }
-            return DateTime.MinValue;
+
+            var year = 0;
+            if (value.Length > 3)
+            {
+                year = int.Parse(value.Substring(0, 4));
+            }
+            else
+            {
+                return null;
+            }
+
+            var month = 1;
+            if (value.Length > 5)
+            {
+                month = int.Parse(value.Substring(4, 2));
+            }
+
+            var day = 1;
+            if (value.Length > 7)
+            {
+                day = int.Parse(value.Substring(6, 2));
+            }
+
+            var hour = 0;
+            if (value.Length > 9)
+            {
+                hour = int.Parse(value.Substring(8, 2));
+            }
+
+            var minute = 0;
+            if (value.Length > 11)
+            {
+                minute = int.Parse(value.Substring(10, 2));
+            }
+
+            var second = 0;
+            if (value.Length > 13)
+            {
+                second = int.Parse(value.Substring(12, 2));
+            }
+
+            return new DateTime(year, month, day, hour, minute, second);
         }
+
+        //public DateTime? ParseLongToDate(long ldate)
+        //{
+        //    try
+        //    {
+        //        if (ldate < 1) return DateTime.MinValue;
+        //        ldate /= 100L;
+        //        var minute = (int)(ldate % 100L);
+        //        ldate /= 100L;
+        //        var hour = (int)(ldate % 100L);
+        //        ldate /= 100L;
+        //        var day = (int)(ldate % 100L);
+        //        ldate /= 100L;
+        //        var month = (int)(ldate % 100L);
+        //        ldate /= 100L;
+        //        var year = (int)ldate;
+        //        return new DateTime(year, month, day, hour, minute, 0, 0);
+        //    }
+        //    catch (Exception)
+        //    {
+        //        _logger.Error("Problem parsing date value {0}", ldate);
+        //    }
+
+        //    return null;
+        //}
     }
 }

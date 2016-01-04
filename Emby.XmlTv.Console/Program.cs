@@ -6,12 +6,11 @@ using System.Threading.Tasks;
 
 using Emby.XmlTv.Classes;
 using Emby.XmlTv.Console.Classes;
-
-using MediaBrowser.Model.Dto;
+using Emby.XmlTv.Entities;
 
 namespace Emby.XmlTv.Console
 {
-    class Program
+    public class Program
     {
         static void Main(string[] args)
         {
@@ -58,16 +57,16 @@ namespace Emby.XmlTv.Console
             }
         }
 
-        private static async Task ReadOutChannelProgrammes(XmlTvReader reader, NameIdPair channel, StreamWriter resultsFileStream)
+        private static async Task ReadOutChannelProgrammes(XmlTvReader reader, XmlTvChannel channel, StreamWriter resultsFileStream)
         {
             //var startDate = new DateTime(2015, 11, 28);
             //var endDate = new DateTime(2015, 11, 29);
             var startDate = DateTime.MinValue;
             var endDate = DateTime.MaxValue;
 
-            foreach (var programme in reader.GetProgrammes(null, channel.Id, null, startDate, endDate, new CancellationToken()))
+            foreach (var programme in reader.GetProgrammes(channel.Id, startDate, endDate, new CancellationToken()))
             {
-                await resultsFileStream.WriteLineAsync(programme.GetProgrammeDetail());
+                await resultsFileStream.WriteLineAsync(programme.GetProgrammeDetail(channel));
             }
         }
     }
