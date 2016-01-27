@@ -345,7 +345,7 @@ namespace Emby.XmlTv.Classes
                 result.Episode.Series = int.Parse(seriesComponents[0]) + 1; // handle the zero basing!
                 if (seriesComponents.Count() == 2)
                 {
-                    result.Episode.SeriesCount = int.Parse(seriesComponents[1]) + 1; // handle the zero basing!
+                    result.Episode.SeriesCount = int.Parse(seriesComponents[1]);
                 }
             }
 
@@ -356,7 +356,7 @@ namespace Emby.XmlTv.Classes
                 result.Episode.Episode = int.Parse(episodeComponents[0]) + 1; // handle the zero basing!
                 if (episodeComponents.Count() == 2)
                 {
-                    result.Episode.EpisodeCount = int.Parse(episodeComponents[1]) + 1; // handle the zero basing!
+                    result.Episode.EpisodeCount = int.Parse(episodeComponents[1]);
                 }
 
             }
@@ -368,7 +368,7 @@ namespace Emby.XmlTv.Classes
                 result.Episode.Part = int.Parse(partComponents[0]) + 1; // handle the zero basing!
                 if (partComponents.Count() == 2)
                 {
-                    result.Episode.PartCount = int.Parse(partComponents[1]) + 1; // handle the zero basing!
+                    result.Episode.PartCount = int.Parse(partComponents[1]);
                 }
 
             }
