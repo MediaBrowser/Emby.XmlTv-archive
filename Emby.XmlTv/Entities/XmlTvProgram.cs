@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace Emby.XmlTv.Entities
 {
@@ -42,6 +43,17 @@ namespace Emby.XmlTv.Entities
             Credits = new List<XmlTvCredit>();
             Genres = new List<string>();
             Episode = new XmlTvEpisode();
+        }
+
+        public override string ToString()
+        {
+            var builder = new StringBuilder();
+            builder.AppendLine($"Id: \t\t{Id}");
+            builder.AppendLine($"ChannelId: \t\t{ChannelId}");
+            builder.AppendLine($"Name: \t\t{Name}");
+            builder.AppendLine($"StartDate: \t\t{StartDate}");
+            builder.AppendLine($"EndDate: \t\t{EndDate}");
+            return builder.ToString();
         }
     }
 }

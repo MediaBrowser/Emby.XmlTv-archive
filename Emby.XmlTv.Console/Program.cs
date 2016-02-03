@@ -14,7 +14,7 @@ namespace Emby.XmlTv.Console
     {
         static void Main(string[] args)
         {
-            var filename = @"C:\Program Files (x86)\XMLTV GUI\data.xml";
+            var filename = @"C:\Temp\VIC.Shepparton.xml";
 
             if (args.Length == 1 && File.Exists(args[0]))
             {

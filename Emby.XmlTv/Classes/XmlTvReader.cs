@@ -14,6 +14,7 @@ namespace Emby.XmlTv.Classes
     public class XmlTvReader
     {
         private readonly ILogger _logger;
+        private readonly ILogger _safeLogger = new ConsoleLogger();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="XmlTvReader"/> class.
@@ -34,7 +35,15 @@ namespace Emby.XmlTv.Classes
         {
             _fileName = fileName;
         }
-        
+
+        public ILogger Logger
+        {
+            get
+            {
+                return _logger ?? _safeLogger;
+            }
+        }
+
         /// <summary>
         /// Gets the channels.
         /// </summary>
@@ -66,7 +75,7 @@ namespace Emby.XmlTv.Classes
             
             if (string.IsNullOrEmpty(id))
             {
-                _logger.Error("No id found for channel row");
+                Logger.Error("No id found for channel row");
                 // Log.Error("  channel#{0} doesnt contain an id", iChannel);
                 return null;
             }
@@ -78,13 +87,13 @@ namespace Emby.XmlTv.Classes
             }
             else
             {
-                _logger.Error($"No display-name found for channel {id}");
+                Logger.Error($"No display-name found for channel {id}");
                 return null;
             }
 
             if (string.IsNullOrEmpty(displayName))
             {
-                _logger.Error($"No display-name found for channel {id}");
+                Logger.Error($"No display-name found for channel {id}");
                 // Log.Error("  channel#{0} xmlid:{1} doesnt contain an displayname", iChannel, id);
                 return null;
             }
@@ -124,74 +133,83 @@ namespace Emby.XmlTv.Classes
 
         public XmlTvProgram GetProgramme(XmlReader reader, string channelNumber, DateTime startDateUtc, DateTime endDateUtc)
         {
-            
             var result = new XmlTvProgram();
 
-            PopulateHeader(reader, result);
-
-            // First up, validate that this is the correct channel, and programme is within the time we are expecting
-            if (string.IsNullOrEmpty(result.ChannelId) || result.ChannelId != channelNumber)
+            try
             {
-                return null;
-            }
 
-            if (result.StartDate < startDateUtc || result.StartDate >= endDateUtc)
-            {
-                return null;
-            }
+                PopulateHeader(reader, result);
 
-            var xmlProg = reader.ReadSubtree();
-            xmlProg.ReadStartElement(); // now, xmlProg is positioned on the first sub-element of <programme>
-
-            // Read out the data for each node and process individually
-            while (!xmlProg.EOF)
-            {
-                if (xmlProg.NodeType == XmlNodeType.Element)
+                // First up, validate that this is the correct channel, and programme is within the time we are expecting
+                if (string.IsNullOrEmpty(result.ChannelId) || result.ChannelId != channelNumber)
                 {
-                    switch (xmlProg.Name)
-                    {
-                        case "title":
-                            ProcessTitleNode(xmlProg, result);
-                            break;
-                        case "category":
-                            ProcessCategory(xmlProg, result);
-                            break;
-                        case "desc":
-                            ProcessDescription(xmlProg, result);
-                            break;
-                        case "sub-title":
-                            ProcessSubTitle(xmlProg, result); 
-                            break;
-                        case "previously-shown":
-                            ProcessPreviouslyShown(xmlProg, result);
-                            break;
-                        case "episode-num":
-                            ProcessEpisodeNum(xmlProg, result);
-                            break;
-                        case "date": // Copyright date
-                            ProcessCopyrightDate(xmlProg, result);
-                            break;
-                        case "star-rating": // Community Rating
-                            ProcessStarRating(xmlProg, result);
-                            break;
-                        //case "rating": // Certification Rating
-                        //    xmlProg.Skip();
-                        //    break;
-                        case "credits":
-                            ProcessCredits(xmlProg, result);
-                            break;
-                        default:
-                            // unknown, skip entire node
-                            xmlProg.Skip();
-                            break;
-                    }
+                    return null;
                 }
-                else
-                    xmlProg.Read();
-            }
 
-            xmlProg.Close();
-            return result;
+                if (result.StartDate < startDateUtc || result.StartDate >= endDateUtc)
+                {
+                    return null;
+                }
+
+                var xmlProg = reader.ReadSubtree();
+                xmlProg.ReadStartElement(); // now, xmlProg is positioned on the first sub-element of <programme>
+
+                // Read out the data for each node and process individually
+                while (!xmlProg.EOF)
+                {
+                    if (xmlProg.NodeType == XmlNodeType.Element)
+                    {
+                        switch (xmlProg.Name)
+                        {
+                            case "title":
+                                ProcessTitleNode(xmlProg, result);
+                                break;
+                            case "category":
+                                ProcessCategory(xmlProg, result);
+                                break;
+                            case "desc":
+                                ProcessDescription(xmlProg, result);
+                                break;
+                            case "sub-title":
+                                ProcessSubTitle(xmlProg, result);
+                                break;
+                            case "previously-shown":
+                                ProcessPreviouslyShown(xmlProg, result);
+                                break;
+                            case "episode-num":
+                                ProcessEpisodeNum(xmlProg, result);
+                                break;
+                            case "date": // Copyright date
+                                ProcessCopyrightDate(xmlProg, result);
+                                break;
+                            case "star-rating": // Community Rating
+                                ProcessStarRating(xmlProg, result);
+                                break;
+                            //case "rating": // Certification Rating
+                            //    xmlProg.Skip();
+                            //    break;
+                            case "credits":
+                                ProcessCredits(xmlProg, result);
+                                break;
+                            default:
+                                // unknown, skip entire node
+                                xmlProg.Skip();
+                                break;
+                        }
+                    }
+                    else
+                        xmlProg.Read();
+                }
+
+                xmlProg.Close();
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException($"Error parsing programme: {result}", ex);
+                throw;
+            } 
+           
         }
 
         private void ProcessCopyrightDate(XmlReader xmlProg, XmlTvProgram result)
@@ -364,7 +382,7 @@ namespace Emby.XmlTv.Classes
             if (!string.IsNullOrEmpty(components[2]))
             {
                 // Handle either "5/12" or "5"
-                var partComponents = components[1].Split(new [] { "/" }, StringSplitOptions.None);
+                var partComponents = components[2].Split(new [] { "/" }, StringSplitOptions.None);
                 result.Episode.Part = int.Parse(partComponents[0]) + 1; // handle the zero basing!
                 if (partComponents.Count() == 2)
                 {
@@ -546,7 +564,7 @@ namespace Emby.XmlTv.Classes
         //    }
         //    catch (Exception)
         //    {
-        //        _logger.Error("Problem parsing date value {0}", ldate);
+        //        Logger.Error("Problem parsing date value {0}", ldate);
         //    }
 
         //    return null;

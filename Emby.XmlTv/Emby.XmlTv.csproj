@@ -51,6 +51,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Entities\ConsoleLogger.cs" />
     <Compile Include="Entities\XmlTvCreditType.cs" />
     <Compile Include="Entities\XmlTvChannel.cs" />
     <Compile Include="Entities\XmlTvCredit.cs" />
@@ -63,6 +64,7 @@
     <None Include="packages.config" />
     <None Include="XmlTvSchema.dtd">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
     </None>
   </ItemGroup>
   <ItemGroup />
