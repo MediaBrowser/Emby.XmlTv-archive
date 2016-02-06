@@ -1,13 +1,20 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.24720.0
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Emby.XmlTv.Console", "Emby.XmlTv.Console\Emby.XmlTv.Console.csproj", "{ADD1D993-6D74-480A-B1FC-7FD9FD05A769}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Emby.XmlTv", "Emby.XmlTv\Emby.XmlTv.csproj", "{0D023565-5942-4D79-9098-A1B4B6665A40}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Emby.XmlTv.Test", "Emby.XmlTv.Test\Emby.XmlTv.Test.csproj", "{C8298223-2468-466C-9B06-FBF61926CECB}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{BB0FD191-A9D0-4CC9-A79E-ECBCF1275268}"
+	ProjectSection(SolutionItems) = preProject
+		.nuget\NuGet.Config = .nuget\NuGet.Config
+		.nuget\NuGet.exe = .nuget\NuGet.exe
+		.nuget\NuGet.targets = .nuget\NuGet.targets
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
