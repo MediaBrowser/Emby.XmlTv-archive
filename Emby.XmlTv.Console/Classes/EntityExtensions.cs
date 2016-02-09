@@ -32,8 +32,8 @@ namespace Emby.XmlTv.Console.Classes
             builder.AppendLine($"Short Overview:    {programme.ShortOverview}");
             builder.AppendLine($"Categories:        {string.Join(", ", programme.Genres)}");
             builder.AppendLine($"Credits:           {string.Join(", ", programme.Credits)}");
-            builder.AppendLine($"OriginalAirDate:   {programme.OriginalAirDate:G}");
-            builder.AppendLine($"ProductionYear:    {programme.ProductionYear}");
+            builder.AppendLine($"PreviouslyShown:   {programme.PreviouslyShown:G}");
+            builder.AppendLine($"CopyrightDate:     {programme.CopyrightDate:G}");
             builder.AppendLine($"IsRepeat:          {programme.IsRepeat}");
             builder.AppendLine("-------------------------------------------------------");
             return builder.ToString();

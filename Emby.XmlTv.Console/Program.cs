@@ -14,7 +14,7 @@ namespace Emby.XmlTv.Console
     {
         static void Main(string[] args)
         {
-            var filename = @"C:\Temp\VIC.Shepparton.xml";
+            var filename = @"C:\Temp\NZ-TVGuide.xml";
 
             if (args.Length == 1 && File.Exists(args[0]))
             {
@@ -25,7 +25,7 @@ namespace Emby.XmlTv.Console
             System.Console.WriteLine("Running XMLTv Parsing");
 
             // var resultsFile = $"{Path.GetDirectoryName(filename)}\\{Path.GetFileNameWithoutExtension(filename)}_Results_{DateTime.UtcNow:hhmmss}.txt";
-            var resultsFile = $"C:\\Temp\\{Path.GetFileNameWithoutExtension(filename)}_Results_{DateTime.UtcNow:hhmmss}.txt";
+            var resultsFile = $"C:\\Temp\\{Path.GetFileNameWithoutExtension(filename)}_Results_{DateTime.UtcNow:HHmmss}.txt";
 
             ReadSourceXmlTvFile(filename, resultsFile).Wait();
 

@@ -87,13 +87,13 @@ namespace Emby.XmlTv.Classes
             }
             else
             {
-                Logger.Error($"No display-name found for channel {id}");
+                Logger.Error("No display-name found for channel {0}", id);
                 return null;
             }
 
             if (string.IsNullOrEmpty(displayName))
             {
-                Logger.Error($"No display-name found for channel {id}");
+                Logger.Error("No display-name found for channel {0}", id);
                 // Log.Error("  channel#{0} xmlid:{1} doesnt contain an displayname", iChannel, id);
                 return null;
             }
@@ -206,7 +206,7 @@ namespace Emby.XmlTv.Classes
             }
             catch (Exception ex)
             {
-                Logger.ErrorException($"Error parsing programme: {result}", ex);
+                Logger.ErrorException($"Error parsing programme: {0}", ex, result);
                 throw;
             } 
            
@@ -218,14 +218,14 @@ namespace Emby.XmlTv.Classes
             if (string.IsNullOrEmpty(startValue))
             {
                 // Log.Error("  programme#{0} doesnt contain a start date", iChannel);
-                result.ProductionYear = null;
+                result.CopyrightDate = null;
             }
             else
             {
                 var copyrightDate = ParseDate(startValue);
                 if (copyrightDate != null)
                 {
-                    result.ProductionYear = copyrightDate.Value.Year;
+                    result.CopyrightDate = copyrightDate;
                 }
             }
         }
@@ -395,16 +395,18 @@ namespace Emby.XmlTv.Classes
         public void ProcessPreviouslyShown(XmlReader reader, XmlTvProgram result)
         {
             // <previously-shown start="20070708000000" />
-            var value = reader.ReadElementContentAsString();
+            var value = reader.GetAttribute("start");
             if (!string.IsNullOrEmpty(value))
             {
                 // TODO: this may not be correct = validate it
-                result.OriginalAirDate = ParseDate(value);
-                if (result.OriginalAirDate != result.StartDate)
+                result.PreviouslyShown = ParseDate(value);
+                if (result.PreviouslyShown != result.StartDate)
                 {
                     result.IsRepeat = true;
                 }
             }
+
+            reader.Skip(); // Move on
         }
 
         public void ProcessCategory(XmlReader reader, XmlTvProgram result)

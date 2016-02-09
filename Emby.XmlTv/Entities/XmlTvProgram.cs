@@ -24,7 +24,7 @@ namespace Emby.XmlTv.Entities
 
         public List<string> Genres { get; set; }
 
-        public DateTime? OriginalAirDate { get; set; }
+        public DateTime? PreviouslyShown { get; set; }
 
         public float? CommunityRating { get; set; }
 
@@ -32,7 +32,7 @@ namespace Emby.XmlTv.Entities
 
         public bool IsSeries { get; set; }
 
-        public int? ProductionYear { get; set; }
+        public DateTime? CopyrightDate { get; set; }
 
         public XmlTvEpisode Episode { get; set; }
 
