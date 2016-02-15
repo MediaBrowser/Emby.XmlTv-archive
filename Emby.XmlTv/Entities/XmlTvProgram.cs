@@ -4,10 +4,8 @@ using System.Text;
 
 namespace Emby.XmlTv.Entities
 {
-    public class XmlTvProgram
+    public class XmlTvProgram : IEquatable<XmlTvProgram>
     {
-        public string Id { get; set; }
-
         public string ChannelId { get; set; }
 
         public string Name { get; set; }
@@ -45,14 +43,38 @@ namespace Emby.XmlTv.Entities
             Episode = new XmlTvEpisode();
         }
 
+        public bool Equals(XmlTvProgram other)
+        {
+            // If both are null, or both are same instance, return true.
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            // If the other is null then return false
+            if (other == null)
+            {
+                return false;
+            }
+
+            // Return true if the fields match:
+            return ChannelId == other.ChannelId &&
+                StartDate == other.StartDate &&
+                EndDate == other.EndDate;
+        }
+
+        public override int GetHashCode()
+        {
+            return (ChannelId.GetHashCode() * 17) + (StartDate.GetHashCode() * 17) + (EndDate.GetHashCode() * 17);
+        }
+
         public override string ToString()
         {
             var builder = new StringBuilder();
-            builder.AppendLine($"Id: \t\t{Id}");
-            builder.AppendLine($"ChannelId: \t\t{ChannelId}");
-            builder.AppendLine($"Name: \t\t{Name}");
-            builder.AppendLine($"StartDate: \t\t{StartDate}");
-            builder.AppendLine($"EndDate: \t\t{EndDate}");
+            builder.AppendFormat("ChannelId: \t\t{0}\r\n", ChannelId);
+            builder.AppendFormat("Name: \t\t{0}\r\n", Name);
+            builder.AppendFormat("StartDate: \t\t{0}\r\n", StartDate);
+            builder.AppendFormat("EndDate: \t\t{0}\r\n", EndDate);
             return builder.ToString();
         }
     }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -24,12 +25,13 @@ namespace Emby.XmlTv.Console
             var timer = Stopwatch.StartNew();
             System.Console.WriteLine("Running XMLTv Parsing");
 
-            // var resultsFile = $"{Path.GetDirectoryName(filename)}\\{Path.GetFileNameWithoutExtension(filename)}_Results_{DateTime.UtcNow:hhmmss}.txt";
-            var resultsFile = $"C:\\Temp\\{Path.GetFileNameWithoutExtension(filename)}_Results_{DateTime.UtcNow:HHmmss}.txt";
+            var resultsFile = String.Format("C:\\Temp\\{0}_Results_{1:HHmmss}.txt", 
+                Path.GetFileNameWithoutExtension(filename),
+                DateTime.UtcNow);
 
             ReadSourceXmlTvFile(filename, resultsFile).Wait();
 
-            System.Console.WriteLine($"Completed in {timer.Elapsed:g} - press any key to open the file...");
+            System.Console.WriteLine("Completed in {0:g} - press any key to open the file...", timer.Elapsed);
             System.Console.ReadKey();
 
             Process.Start(resultsFile);
@@ -37,7 +39,7 @@ namespace Emby.XmlTv.Console
 
         public static async Task ReadSourceXmlTvFile(string filename, string resultsFile)
         {
-            System.Console.WriteLine($"Writing to file: {resultsFile}");
+            System.Console.WriteLine("Writing to file: {0}", resultsFile);
 
             using (var resultsFileStream = new StreamWriter(resultsFile) { AutoFlush = true })
             {
@@ -50,9 +52,19 @@ namespace Emby.XmlTv.Console
 
         public static async Task ReadOutChannels(XmlTvReader reader, StreamWriter resultsFileStream)
         {
-            foreach (var channel in reader.GetChannels())
+            var channels = reader.GetChannels().Distinct().ToList();
+
+            resultsFileStream.Write(EntityExtensions.GetHeader("Channels"));
+
+            foreach (var channel in channels)
             {
-                resultsFileStream.Write(channel.GetChannelHeader());
+                resultsFileStream.Write("{0}\r\n", channel);
+            }
+
+            resultsFileStream.Write("\r\n");
+            foreach (var channel in channels)
+            {
+                resultsFileStream.Write(EntityExtensions.GetHeader("Programs for " + channel));
                 await ReadOutChannelProgrammes(reader, channel, resultsFileStream);
             }
         }
@@ -64,7 +76,7 @@ namespace Emby.XmlTv.Console
             var startDate = DateTime.MinValue;
             var endDate = DateTime.MaxValue;
 
-            foreach (var programme in reader.GetProgrammes(channel.Id, startDate, endDate, new CancellationToken()))
+            foreach (var programme in reader.GetProgrammes(channel.Id, startDate, endDate, new CancellationToken()).Distinct())
             {
                 await resultsFileStream.WriteLineAsync(programme.GetProgrammeDetail(channel));
             }

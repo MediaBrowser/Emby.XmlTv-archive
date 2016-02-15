@@ -206,7 +206,7 @@ namespace Emby.XmlTv.Classes
             }
             catch (Exception ex)
             {
-                Logger.ErrorException($"Error parsing programme: {0}", ex, result);
+                Logger.ErrorException("Error parsing programme: {0}", ex, result);
                 throw;
             } 
            

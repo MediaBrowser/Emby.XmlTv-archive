@@ -8,9 +8,9 @@ namespace Emby.XmlTv.Console.Classes
 {
     public static class EntityExtensions
     {
-        public static string GetChannelHeader(this XmlTvChannel channel)
+        public static string GetHeader(this string text)
         {
-            var channelHeaderString = $" {channel.Id} - {channel.Name} ";
+            var channelHeaderString = " " + text;
 
             var builder = new StringBuilder();
             builder.AppendLine("".PadRight(5 + channelHeaderString.Length + 5, Char.Parse("*")));
@@ -23,18 +23,18 @@ namespace Emby.XmlTv.Console.Classes
         public static string GetProgrammeDetail(this XmlTvProgram programme, XmlTvChannel channel)
         {
             var builder = new StringBuilder();
-            builder.AppendLine($"Channel:           {channel.Id} - {channel.Name}");
-            builder.AppendLine($"StartDate:         {programme.StartDate:G}");
-            builder.AppendLine($"EndDate:           {programme.EndDate:G}");
-            builder.AppendLine($"Name:              {programme.Name}");
-            builder.AppendLine($"Episode Detail:    {programme.Episode}");
-            builder.AppendLine($"Episode Title:     {programme.Episode.Title}");
-            builder.AppendLine($"Short Overview:    {programme.ShortOverview}");
-            builder.AppendLine($"Categories:        {string.Join(", ", programme.Genres)}");
-            builder.AppendLine($"Credits:           {string.Join(", ", programme.Credits)}");
-            builder.AppendLine($"PreviouslyShown:   {programme.PreviouslyShown:G}");
-            builder.AppendLine($"CopyrightDate:     {programme.CopyrightDate:G}");
-            builder.AppendLine($"IsRepeat:          {programme.IsRepeat}");
+            builder.AppendFormat("Channel:           {0}\r\n", channel);
+            builder.AppendFormat("StartDate:         {0:G}\r\n", programme.StartDate);
+            builder.AppendFormat("EndDate:           {0:G}\r\n", programme.EndDate);
+            builder.AppendFormat("Name:              {0}\r\n", programme.Name);
+            builder.AppendFormat("Episode Detail:    {0}\r\n", programme.Episode);
+            builder.AppendFormat("Episode Title:     {0}\r\n", programme.Episode.Title);
+            builder.AppendFormat("Short Overview:    {0}\r\n", programme.ShortOverview);
+            builder.AppendFormat("Categories:        {0}\r\n", string.Join(", ", programme.Genres));
+            builder.AppendFormat("Credits:           {0}\r\n", string.Join(", ", programme.Credits));
+            builder.AppendFormat("PreviouslyShown:   {0:G}\r\n", programme.PreviouslyShown);
+            builder.AppendFormat("CopyrightDate:     {0:G}\r\n", programme.CopyrightDate);
+            builder.AppendFormat("IsRepeat:          {0}\r\n", programme.IsRepeat);
             builder.AppendLine("-------------------------------------------------------");
             return builder.ToString();
         }

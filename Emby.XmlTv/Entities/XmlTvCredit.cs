@@ -1,4 +1,5 @@
-﻿using System.Web.UI.WebControls;
+﻿using System;
+using System.Web.UI.WebControls;
 
 namespace Emby.XmlTv.Entities
 {
@@ -9,7 +10,7 @@ namespace Emby.XmlTv.Entities
 
         public override string ToString()
         {
-            return $"{Name} - ({Type})";
+            return String.Format("{0} - ({1})", Name, Type);
         }
     }
 }
