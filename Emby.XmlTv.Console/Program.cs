@@ -15,7 +15,7 @@ namespace Emby.XmlTv.Console
     {
         static void Main(string[] args)
         {
-            var filename = @"C:\Temp\NZ-TVGuide.xml";
+            var filename = @"C:\Temp\iceguide.xml";
 
             if (args.Length == 1 && File.Exists(args[0]))
             {
@@ -58,28 +58,43 @@ namespace Emby.XmlTv.Console
 
             foreach (var channel in channels)
             {
+                System.Console.WriteLine("Retrieved Channel: {0}", channel);
                 resultsFileStream.Write("{0}\r\n", channel);
             }
+
+            var totalProgrammeCount = 0;
 
             resultsFileStream.Write("\r\n");
             foreach (var channel in channels)
             {
+                System.Console.WriteLine("Processing Channel: {0}", channel);
+
                 resultsFileStream.Write(EntityExtensions.GetHeader("Programs for " + channel));
-                await ReadOutChannelProgrammes(reader, channel, resultsFileStream);
+                var channelProgrammeCount = await ReadOutChannelProgrammes(reader, channel, resultsFileStream);
+
+                totalProgrammeCount += channelProgrammeCount;
+                await resultsFileStream.WriteLineAsync(String.Format("Total Programmes for {1}: {0}", channelProgrammeCount, channel));
             }
+
+            await resultsFileStream.WriteLineAsync(String.Format("Total Programmes: {0}", totalProgrammeCount));
         }
 
-        private static async Task ReadOutChannelProgrammes(XmlTvReader reader, XmlTvChannel channel, StreamWriter resultsFileStream)
+        private static async Task<int> ReadOutChannelProgrammes(XmlTvReader reader, XmlTvChannel channel, StreamWriter resultsFileStream)
         {
             //var startDate = new DateTime(2015, 11, 28);
             //var endDate = new DateTime(2015, 11, 29);
             var startDate = DateTime.MinValue;
             var endDate = DateTime.MaxValue;
 
+            var count = 0;
+
             foreach (var programme in reader.GetProgrammes(channel.Id, startDate, endDate, new CancellationToken()).Distinct())
             {
+                count++;
                 await resultsFileStream.WriteLineAsync(programme.GetProgrammeDetail(channel));
             }
+
+            return count;
         }
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Web.UI;
 using System.Xml;
 
 using Emby.XmlTv.Entities;
@@ -310,20 +311,17 @@ namespace Emby.XmlTv.Classes
             */
 
             var episodeSystem = reader.GetAttribute("system");
-            if (!String.IsNullOrEmpty(episodeSystem))
+            switch (episodeSystem)
             {
-                if (episodeSystem == "xmltv_ns")
-                {
+                case "xmltv_ns":
                     ParseEpisodeDataForXmlTvNs(reader, result);
-                }
-                else if (episodeSystem == "onscreen")
-                {
+                    break;
+                case "onscreen":
                     ParseEpisodeDataForOnScreen(reader, result);
-                }
-            }
-            else
-            {
-                reader.Skip();
+                    break;
+                default: // Handles empty string and nulls
+                    reader.Skip();
+                break;
             }
         }
 
