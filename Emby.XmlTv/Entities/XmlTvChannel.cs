@@ -1,11 +1,14 @@
 ﻿using System;
+using System.Text;
 
 namespace Emby.XmlTv.Entities
 {
     public class XmlTvChannel : IEquatable<XmlTvChannel>
     {
         public String Id { get; set; }
-        public String Name { get; set; }
+        public String DisplayName { get; set; }
+
+        public string Url { get; set; }
 
         public bool Equals(XmlTvChannel other)
         {
@@ -32,7 +35,15 @@ namespace Emby.XmlTv.Entities
 
         public override string ToString()
         {
-            return String.Format("{0} - {1} ", Id, Name);
+            var builder = new StringBuilder();
+            builder.AppendFormat("{0} - {1} ", Id, DisplayName);
+
+            if (!string.IsNullOrEmpty(Url))
+            {
+                builder.AppendFormat(" ({0})", Url);
+            }
+
+            return builder.ToString();
         }
     }
 }

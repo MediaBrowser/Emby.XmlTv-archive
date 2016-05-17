@@ -24,17 +24,20 @@ namespace Emby.XmlTv.Console.Classes
         {
             var builder = new StringBuilder();
             builder.AppendFormat("Channel:           {0}\r\n", channel);
-            builder.AppendFormat("StartDate:         {0:G}\r\n", programme.StartDate);
-            builder.AppendFormat("EndDate:           {0:G}\r\n", programme.EndDate);
-            builder.AppendFormat("Name:              {0}\r\n", programme.Name);
+            builder.AppendFormat("Start Date:        {0:G}\r\n", programme.StartDate);
+            builder.AppendFormat("End Date:          {0:G}\r\n", programme.EndDate);
+            builder.AppendFormat("Name:              {0}\r\n", programme.Title);
             builder.AppendFormat("Episode Detail:    {0}\r\n", programme.Episode);
             builder.AppendFormat("Episode Title:     {0}\r\n", programme.Episode.Title);
-            builder.AppendFormat("Short Overview:    {0}\r\n", programme.ShortOverview);
-            builder.AppendFormat("Categories:        {0}\r\n", string.Join(", ", programme.Genres));
+            builder.AppendFormat("Description:       {0}\r\n", programme.Description);
+            builder.AppendFormat("Categories:        {0}\r\n", string.Join(", ", programme.Categories));
+            builder.AppendFormat("Countries:         {0}\r\n", string.Join(", ", programme.Countries));
             builder.AppendFormat("Credits:           {0}\r\n", string.Join(", ", programme.Credits));
-            builder.AppendFormat("PreviouslyShown:   {0:G}\r\n", programme.PreviouslyShown);
-            builder.AppendFormat("CopyrightDate:     {0:G}\r\n", programme.CopyrightDate);
-            builder.AppendFormat("IsRepeat:          {0}\r\n", programme.IsRepeat);
+            builder.AppendFormat("Rating:            {0}\r\n", programme.Rating);
+            builder.AppendFormat("Star Rating:       {0}\r\n", programme.StarRating.HasValue ? programme.StarRating.Value.ToString() : string.Empty);
+            builder.AppendFormat("Previously Shown:  {0:G}\r\n", programme.PreviouslyShown);
+            builder.AppendFormat("Copyright Date:    {0:G}\r\n", programme.CopyrightDate);
+            builder.AppendFormat("Is Repeat:         {0}\r\n", programme.IsRepeat);
             builder.AppendLine("-------------------------------------------------------");
             return builder.ToString();
         }

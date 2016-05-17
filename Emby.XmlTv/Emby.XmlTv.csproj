@@ -60,6 +60,7 @@
     <Compile Include="Entities\XmlTvCredit.cs" />
     <Compile Include="Entities\XmlTvEpisode.cs" />
     <Compile Include="Entities\XmlTvProgram.cs" />
+    <Compile Include="Entities\XmlTvRating.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Classes\XmlTvReader.cs" />
   </ItemGroup>

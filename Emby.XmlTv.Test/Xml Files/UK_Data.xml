@@ -45,7 +45,9 @@
     </subtitles>
   </programme>
   <programme start="20151126100000 +0000" stop="20151126110000 +0000" channel="UK_RT_2667">
-    <title lang="en">Homes Under the Hammer</title>
+    <title lang="en">Homes Under the Hammer - Title 1</title>
+    <title lang="en">Homes Under the Hammer - Title 2</title>
+    <title lang="en">Homes Under the Hammer - Title 3</title>
     <desc lang="en">Lucy Alexander, Martin Roberts and Dion Dublin explore a semi in Chingford, London, a one-bedroom flat in Brighton and a Victorian terrace in Normanton, Derby.</desc>
     <credits>
       <actor>Presenter - Lucy Alexander</actor>
@@ -63,7 +65,9 @@
     </subtitles>
   </programme>
   <programme start="20151126110000 +0000" stop="20151126114500 +0000" channel="UK_RT_2667">
-    <title lang="en">Oxford Street Revealed</title>
+    <title>Oxford Street Revealed - Title 1</title>
+    <title>Oxford Street Revealed - Title 2</title>
+    <title>Oxford Street Revealed - Title 3</title>
     <desc lang="en">Undercover police set out to catch shoplifters red-handed, the John Lewis staff celebrate Burns Night and the Dominion Theatre gets ready for the opening of The Lord of the Dance.</desc>
     <credits>
       <director>Peter Gowing</director>

@@ -15,7 +15,7 @@ namespace Emby.XmlTv.Console
     {
         static void Main(string[] args)
         {
-            var filename = @"C:\Temp\iceguide.xml";
+            var filename = @"C:\Temp\xmltv - copia.xml";
 
             if (args.Length == 1 && File.Exists(args[0]))
             {
@@ -29,7 +29,10 @@ namespace Emby.XmlTv.Console
                 Path.GetFileNameWithoutExtension(filename),
                 DateTime.UtcNow);
 
-            ReadSourceXmlTvFile(filename, resultsFile).Wait();
+            System.Console.Write("Enter the language required: ");
+            var lang = System.Console.ReadLine();
+
+            ReadSourceXmlTvFile(filename, resultsFile, lang).Wait();
 
             System.Console.WriteLine("Completed in {0:g} - press any key to open the file...", timer.Elapsed);
             System.Console.ReadKey();
@@ -37,13 +40,13 @@ namespace Emby.XmlTv.Console
             Process.Start(resultsFile);
         }
 
-        public static async Task ReadSourceXmlTvFile(string filename, string resultsFile)
+        public static async Task ReadSourceXmlTvFile(string filename, string resultsFile, string lang)
         {
             System.Console.WriteLine("Writing to file: {0}", resultsFile);
 
             using (var resultsFileStream = new StreamWriter(resultsFile) { AutoFlush = true })
             {
-                var reader = new XmlTvReader(filename);
+                var reader = new XmlTvReader(filename, lang);
                 await ReadOutChannels(reader, resultsFileStream);
 
                 resultsFileStream.Close();
@@ -67,13 +70,13 @@ namespace Emby.XmlTv.Console
             resultsFileStream.Write("\r\n");
             foreach (var channel in channels)
             {
-                System.Console.WriteLine("Processing Channel: {0}", channel);
+                System.Console.WriteLine("Processing Channel: {0}", channel.DisplayName);
 
-                resultsFileStream.Write(EntityExtensions.GetHeader("Programs for " + channel));
+                resultsFileStream.Write(EntityExtensions.GetHeader("Programs for " + channel.DisplayName));
                 var channelProgrammeCount = await ReadOutChannelProgrammes(reader, channel, resultsFileStream);
 
                 totalProgrammeCount += channelProgrammeCount;
-                await resultsFileStream.WriteLineAsync(String.Format("Total Programmes for {1}: {0}", channelProgrammeCount, channel));
+                await resultsFileStream.WriteLineAsync(String.Format("Total Programmes for {1}: {0}", channelProgrammeCount, channel.DisplayName));
             }
 
             await resultsFileStream.WriteLineAsync(String.Format("Total Programmes: {0}", totalProgrammeCount));

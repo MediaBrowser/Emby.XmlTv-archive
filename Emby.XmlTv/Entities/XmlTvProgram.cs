@@ -8,23 +8,19 @@ namespace Emby.XmlTv.Entities
     {
         public string ChannelId { get; set; }
 
-        public string Name { get; set; }
-
-        public string OfficialRating { get; set; }
-
-        public string Overview { get; set; }
-
-        public string ShortOverview { get; set; }
-
         public DateTime StartDate { get; set; }
 
         public DateTime EndDate { get; set; }
 
-        public List<string> Genres { get; set; }
+        public string Title { get; set; }
+        
+        public string Description { get; set; }
+
+        public List<string> Categories { get; set; }
+
+        public List<string> Countries { get; set; }
 
         public DateTime? PreviouslyShown { get; set; }
-
-        public float? CommunityRating { get; set; }
 
         public bool IsRepeat { get; set; }
 
@@ -36,10 +32,15 @@ namespace Emby.XmlTv.Entities
 
         public List<XmlTvCredit> Credits { get; set; }
 
+        public XmlTvRating Rating { get; set; }
+
+        public float? StarRating { get; set; }
+
         public XmlTvProgram()
         {
             Credits = new List<XmlTvCredit>();
-            Genres = new List<string>();
+            Categories = new List<string>();
+            Countries = new List<string>();
             Episode = new XmlTvEpisode();
         }
 
@@ -72,7 +73,7 @@ namespace Emby.XmlTv.Entities
         {
             var builder = new StringBuilder();
             builder.AppendFormat("ChannelId: \t\t{0}\r\n", ChannelId);
-            builder.AppendFormat("Name: \t\t{0}\r\n", Name);
+            builder.AppendFormat("Title: \t\t{0}\r\n", Title);
             builder.AppendFormat("StartDate: \t\t{0}\r\n", StartDate);
             builder.AppendFormat("EndDate: \t\t{0}\r\n", EndDate);
             return builder.ToString();
