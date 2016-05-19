@@ -33,7 +33,7 @@ namespace Emby.XmlTv.Classes
         /// </summary>
         /// <param name="fileName">Name of the file.</param>
         /// <param name="language">The specific language to return.</param>
-        public XmlTvReader(string fileName, string language)
+        public XmlTvReader(string fileName, string language = null)
         {
             _fileName = fileName;
             _language = language;
@@ -42,7 +42,7 @@ namespace Emby.XmlTv.Classes
         public ILogger Logger => _logger ?? _safeLogger;
 
         /// <summary>
-        /// Gets the channels.
+        /// Gets the list of channels present in the XML
         /// </summary>
         /// <returns></returns>
         public IEnumerable<XmlTvChannel> GetChannels()
@@ -138,11 +138,19 @@ namespace Emby.XmlTv.Classes
             //Console.WriteLine("Channel - NodeType: {reader.NodeType}, Name: {reader.Name}, Result.Id: {channel.Id}, Result.DisplayName: {channel.DisplayName}, Result.Url: {channel.Url}");
         }
 
+        /// <summary>
+        /// Gets the programmes for a specified channel
+        /// </summary>
+        /// <param name="channelNumber">The channel number.</param>
+        /// <param name="startDateUtc">The UTC start date.</param>
+        /// <param name="endDateUtc">The UTC end date.</param>
+        /// <param name="cancellationToken">A cancellation token.</param>
+        /// <returns></returns>
         public IEnumerable<XmlTvProgram> GetProgrammes(
-            string channelNumber,
-            DateTime startDateUtc,
-            DateTime endDateUtc,
-            CancellationToken cancellationToken)
+                    string channelNumber,
+                    DateTime startDateUtc,
+                    DateTime endDateUtc,
+                    CancellationToken cancellationToken)
         {
             var reader = new XmlTextReader(_fileName);
 
@@ -252,6 +260,43 @@ namespace Emby.XmlTv.Classes
                 throw;
             } 
            
+        }
+
+        /// <summary>
+        /// Gets the list of supported languages in the XML
+        /// </summary>
+        /// <returns></returns>
+        public List<XmlTvLanguage> GetLanguages(CancellationToken cancellationToken)
+        {
+            var results = new Dictionary<string, int>();
+
+            //Loop through and parse out all elements and then lang= attributes
+            var reader = new XmlTextReader(_fileName);
+            while (reader.Read())
+            {
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    continue; // Break out
+                }
+
+                if (reader.NodeType == XmlNodeType.Element)
+                {
+                    var language = reader.GetAttribute("lang");
+                    if (!String.IsNullOrEmpty(language))
+                    {
+                        if (!results.ContainsKey(language))
+                        {
+                            results[language] = 0;
+                        }
+                        results[language]++;
+                    }
+                }
+            }
+
+            return
+                results.Keys.Select(k => new XmlTvLanguage() { Name = k, Relevance = results[k] })
+                    .OrderByDescending(l => l.Relevance)
+                    .ToList();
         }
 
         private void ProcessCopyrightDate(XmlReader xmlProg, XmlTvProgram result)

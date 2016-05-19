@@ -59,6 +59,7 @@
     <Compile Include="Entities\XmlTvChannel.cs" />
     <Compile Include="Entities\XmlTvCredit.cs" />
     <Compile Include="Entities\XmlTvEpisode.cs" />
+    <Compile Include="Entities\XmlTvLanguage.cs" />
     <Compile Include="Entities\XmlTvProgram.cs" />
     <Compile Include="Entities\XmlTvRating.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading;
 
 using Emby.XmlTv.Classes;
-using Emby.XmlTv.Entities;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -155,5 +154,29 @@ namespace Emby.XmlTv.Test
             Assert.IsTrue(programme.Categories.Contains("Property - English"));
             Assert.IsTrue(programme.Categories.Contains("Property - Empty Language"));
         }
+
+        [TestMethod]
+        [DeploymentItem("Xml Files\\MultilanguageData.xml")]
+        public void Should_Return_All_Languages()
+        {
+            var testFile = Path.GetFullPath(@"MultilanguageData.xml");
+            var reader = new XmlTvReader(testFile);
+            var cancellationToken = new CancellationToken();
+
+            var results = reader.GetLanguages(cancellationToken);
+            Assert.IsNotNull(results);
+
+            foreach (var result in results)
+            {
+                Console.WriteLine("{0} - {1}", result.Name, result.Relevance);
+            }
+
+            Assert.AreEqual(2, results.Count);
+            Assert.AreEqual("en", results[0].Name);
+            Assert.AreEqual(11, results[0].Relevance);
+            Assert.AreEqual("es", results[1].Name);
+            Assert.AreEqual(3, results[1].Relevance);
+        }
+
     }
 }
