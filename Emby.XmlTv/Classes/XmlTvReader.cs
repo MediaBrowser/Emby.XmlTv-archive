@@ -16,15 +16,6 @@ namespace Emby.XmlTv.Classes
         private readonly ILogger _logger;
         private readonly ILogger _safeLogger = new ConsoleLogger();
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="XmlTvReader"/> class.
-        /// </summary>
-        /// <param name="logger">The logger.</param>
-        public XmlTvReader(ILogger logger)
-        {
-            _logger = logger;
-        }
-
         private readonly string _fileName;
         private readonly string _language;
 
@@ -33,10 +24,12 @@ namespace Emby.XmlTv.Classes
         /// </summary>
         /// <param name="fileName">Name of the file.</param>
         /// <param name="language">The specific language to return.</param>
-        public XmlTvReader(string fileName, string language = null)
+        /// <param name="logger">The logger.</param>
+        public XmlTvReader(string fileName, string language = null, ILogger logger = null)
         {
             _fileName = fileName;
             _language = language;
+            _logger = logger;
         }
 
         public ILogger Logger => _logger ?? _safeLogger;
