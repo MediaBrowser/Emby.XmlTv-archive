@@ -22,9 +22,43 @@ namespace Emby.XmlTv.Test
             var channels = reader.GetChannels().ToList();
             Assert.AreEqual(5, channels.Count);
 
-            // Pick a channel to check the data for
-            var channel = channels.SingleOrDefault(c => c.Id == "UK_RT_2056" && c.DisplayName == "Channel 4 HD");
+            // Check each channel
+            var channel = channels.SingleOrDefault(c => c.Id == "UK_RT_2667");
             Assert.IsNotNull(channel);
+            Assert.AreEqual("BBC1 HD", channel.DisplayName);
+            Assert.IsNotNull(channel.Icon);
+            Assert.AreEqual("Logo_UK_RT_2667", channel.Icon.Source);
+            Assert.AreEqual(100, channel.Icon.Width);
+            Assert.AreEqual(200, channel.Icon.Height);
+
+            channel = channels.SingleOrDefault(c => c.Id == "UK_RT_105");
+            Assert.IsNotNull(channel);
+            Assert.AreEqual("BBC2", channel.DisplayName);
+            Assert.IsNotNull(channel.Icon);
+            Assert.AreEqual("Logo_UK_RT_105", channel.Icon.Source);
+            Assert.IsFalse(channel.Icon.Width.HasValue);
+            Assert.IsFalse(channel.Icon.Height.HasValue);
+
+            channel = channels.SingleOrDefault(c => c.Id == "UK_RT_2118");
+            Assert.IsNotNull(channel);
+            Assert.AreEqual("ITV1 HD", channel.DisplayName);
+            Assert.IsNotNull(channel.Icon);
+            Assert.AreEqual("Logo_UK_RT_2118", channel.Icon.Source);
+            Assert.AreEqual(100, channel.Icon.Width);
+            Assert.IsFalse(channel.Icon.Height.HasValue);
+
+            channel = channels.SingleOrDefault(c => c.Id == "UK_RT_2056");
+            Assert.IsNotNull(channel);
+            Assert.AreEqual("Channel 4 HD", channel.DisplayName);
+            Assert.IsNotNull(channel.Icon);
+            Assert.AreEqual("Logo_UK_RT_2056", channel.Icon.Source);
+            Assert.IsFalse(channel.Icon.Width.HasValue);
+            Assert.AreEqual(200, channel.Icon.Height);
+
+            channel = channels.SingleOrDefault(c => c.Id == "UK_RT_134");
+            Assert.IsNotNull(channel);
+            Assert.AreEqual("Channel 5", channel.DisplayName);
+            Assert.IsNull(channel.Icon);
         }
 
         [TestMethod]
@@ -38,7 +72,7 @@ namespace Emby.XmlTv.Test
             Assert.AreEqual(5, channels.Count);
 
             // Pick a channel to check the data for
-            var channel = channels.SingleOrDefault(c => c.Id == "UK_RT_2056" && c.DisplayName == "Channel 4 HD");
+            var channel = channels.SingleOrDefault(c => c.Id == "UK_RT_2056");
             Assert.IsNotNull(channel);
 
             var startDate = new DateTime(2015, 11, 26);

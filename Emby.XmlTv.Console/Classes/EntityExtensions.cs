@@ -20,10 +20,22 @@ namespace Emby.XmlTv.Console.Classes
             return builder.ToString();
         }
 
+        public static string GetChannelDetail(this XmlTvChannel channel)
+        {
+            var builder = new StringBuilder();
+            builder.AppendFormat("Id:                {0}\r\n", channel.Id);
+            builder.AppendFormat("Display-Name:      {0}\r\n", channel.DisplayName);
+            builder.AppendFormat("Url:               {0}\r\n", channel.Url);
+            builder.AppendFormat("Icon:              {0}\r\n", channel.Icon != null ? channel.Icon.ToString() : string.Empty);
+            builder.AppendLine("-------------------------------------------------------");
+
+            return builder.ToString();
+        }
+
         public static string GetProgrammeDetail(this XmlTvProgram programme, XmlTvChannel channel)
         {
             var builder = new StringBuilder();
-            builder.AppendFormat("Channel:           {0}\r\n", channel);
+            builder.AppendFormat("Channel:           {0} - {1}\r\n", channel.Id, channel.DisplayName);
             builder.AppendFormat("Start Date:        {0:G}\r\n", programme.StartDate);
             builder.AppendFormat("End Date:          {0:G}\r\n", programme.EndDate);
             builder.AppendFormat("Name:              {0}\r\n", programme.Title);
@@ -38,6 +50,7 @@ namespace Emby.XmlTv.Console.Classes
             builder.AppendFormat("Previously Shown:  {0:G}\r\n", programme.PreviouslyShown);
             builder.AppendFormat("Copyright Date:    {0:G}\r\n", programme.CopyrightDate);
             builder.AppendFormat("Is Repeat:         {0}\r\n", programme.IsRepeat);
+            builder.AppendFormat("Icon:              {0}\r\n", programme.Icon != null ? programme.Icon.ToString() : string.Empty);
             builder.AppendLine("-------------------------------------------------------");
             return builder.ToString();
         }

@@ -7,8 +7,8 @@ namespace Emby.XmlTv.Entities
     {
         public String Id { get; set; }
         public String DisplayName { get; set; }
-
         public string Url { get; set; }
+        public XmlTvIcon Icon { get; set; }
 
         public bool Equals(XmlTvChannel other)
         {

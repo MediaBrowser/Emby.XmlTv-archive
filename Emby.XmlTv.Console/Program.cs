@@ -15,7 +15,7 @@ namespace Emby.XmlTv.Console
     {
         static void Main(string[] args)
         {
-            var filename = @"C:\Temp\xmltv - copia.xml";
+            var filename = @"C:\Temp\QLD.GoldCoast.xml";
 
             if (args.Length == 1 && File.Exists(args[0]))
             {
@@ -61,8 +61,8 @@ namespace Emby.XmlTv.Console
 
             foreach (var channel in channels)
             {
-                System.Console.WriteLine("Retrieved Channel: {0}", channel);
-                resultsFileStream.Write("{0}\r\n", channel);
+                System.Console.WriteLine("Retrieved Channel: {0} - {1}", channel.Id, channel.DisplayName);
+                resultsFileStream.Write(channel.GetChannelDetail());
             }
 
             var totalProgrammeCount = 0;

@@ -62,7 +62,7 @@ namespace Emby.XmlTv.Classes
         public XmlTvChannel GetChannel(XmlReader reader)
         {
             var id = reader.GetAttribute("id");
-            
+
             if (string.IsNullOrEmpty(id))
             {
                 Logger.Error("No id found for channel row");
@@ -90,6 +90,10 @@ namespace Emby.XmlTv.Classes
                             break;
                         case "url":
                             result.Url = xmlChannel.ReadElementContentAsString();
+                            break;
+                        case "icon":
+                            result.Icon = ProcessIconNode(xmlChannel);
+                            xmlChannel.Skip();
                             break;
                         default:
                             xmlChannel.Skip(); // unknown, skip entire node
@@ -128,7 +132,6 @@ namespace Emby.XmlTv.Classes
                 id,
                 displayName,
                 url);
-            //Console.WriteLine("Channel - NodeType: {reader.NodeType}, Name: {reader.Name}, Result.Id: {channel.Id}, Result.DisplayName: {channel.DisplayName}, Result.Url: {channel.Url}");
         }
 
         /// <summary>
@@ -199,43 +202,47 @@ namespace Emby.XmlTv.Classes
                     {
                         switch (xmlProg.Name)
                         {
-                        case "title":
-                            ProcessTitleNode(xmlProg, result);
-                            break;
-                        case "category":
-                            ProcessCategory(xmlProg, result);
-                            break;
-                        case "country":
-                            ProcessCountry(xmlProg, result);
-                            break;
-                        case "desc":
-                            ProcessDescription(xmlProg, result);
-                            break;
-                        case "sub-title":
-                            ProcessSubTitle(xmlProg, result);
-                            break;
-                        case "previously-shown":
-                            ProcessPreviouslyShown(xmlProg, result);
-                            break;
-                        case "episode-num":
-                            ProcessEpisodeNum(xmlProg, result);
-                            break;
-                        case "date": // Copyright date
-                            ProcessCopyrightDate(xmlProg, result);
-                            break;
-                        case "star-rating": // Community Rating
-                            ProcessStarRating(xmlProg, result);
-                            break;
-                        case "rating": // Certification Rating
-                            ProcessRating(xmlProg, result);
-                            break;
-                        case "credits":
-                            ProcessCredits(xmlProg, result);
-                            break;
-                        default:
-                            // unknown, skip entire node
-                            xmlProg.Skip();
-                            break;
+                            case "title":
+                                ProcessTitleNode(xmlProg, result);
+                                break;
+                            case "category":
+                                ProcessCategory(xmlProg, result);
+                                break;
+                            case "country":
+                                ProcessCountry(xmlProg, result);
+                                break;
+                            case "desc":
+                                ProcessDescription(xmlProg, result);
+                                break;
+                            case "sub-title":
+                                ProcessSubTitle(xmlProg, result);
+                                break;
+                            case "previously-shown":
+                                ProcessPreviouslyShown(xmlProg, result);
+                                break;
+                            case "episode-num":
+                                ProcessEpisodeNum(xmlProg, result);
+                                break;
+                            case "date": // Copyright date
+                                ProcessCopyrightDate(xmlProg, result);
+                                break;
+                            case "star-rating": // Community Rating
+                                ProcessStarRating(xmlProg, result);
+                                break;
+                            case "rating": // Certification Rating
+                                ProcessRating(xmlProg, result);
+                                break;
+                            case "credits":
+                                ProcessCredits(xmlProg, result);
+                                break;
+                            case "icon":
+                                result.Icon = ProcessIconNode(xmlProg);
+                                xmlProg.Skip();
+                                break;
+                            default:
+                                // unknown, skip entire node
+                                xmlProg.Skip();
+                                break;
                         }
                     }
                     else
@@ -251,8 +258,8 @@ namespace Emby.XmlTv.Classes
             {
                 Logger.ErrorException("Error parsing programme: {0}", ex, result);
                 throw;
-            } 
-           
+            }
+
         }
 
         /// <summary>
@@ -441,7 +448,7 @@ namespace Emby.XmlTv.Classes
                     break;
                 default: // Handles empty string and nulls
                     reader.Skip();
-                break;
+                    break;
             }
         }
 
@@ -500,7 +507,7 @@ namespace Emby.XmlTv.Classes
             if (!string.IsNullOrEmpty(components[2]))
             {
                 // Handle either "5/12" or "5"
-                var partComponents = components[2].Split(new [] { "/" }, StringSplitOptions.None);
+                var partComponents = components[2].Split(new[] { "/" }, StringSplitOptions.None);
                 result.Episode.Part = int.Parse(partComponents[0]) + 1; // handle the zero basing!
                 if (partComponents.Count() == 2)
                 {
@@ -568,6 +575,38 @@ namespace Emby.XmlTv.Classes
             // <title lang="en">Gino&apos;s Italian Escape</title>
             ProcessNode(reader, s => result.Title = s, _language);
         }
+
+        public XmlTvIcon ProcessIconNode(XmlReader reader)
+        {
+            var result = new XmlTvIcon();
+            var isPopulated = false;
+
+            var source = reader.GetAttribute("src");
+            if (!String.IsNullOrEmpty(source))
+            {
+                result.Source = source;
+                isPopulated = true;
+            }
+
+            var widthString = reader.GetAttribute("width");
+            var width = 0;
+            if (!String.IsNullOrEmpty(widthString) && Int32.TryParse(widthString, out width))
+            {
+                result.Width = width;
+                isPopulated = true;
+            }
+
+            var heightString = reader.GetAttribute("height");
+            var height = 0;
+            if (!String.IsNullOrEmpty(heightString) && Int32.TryParse(heightString, out height))
+            {
+                result.Height = height;
+                isPopulated = true;
+            }
+
+            return isPopulated ? result : null;
+        }
+
 
         //public void ProcessNodeWithLanguage(XmlReader reader, Action<string> setter)
         //{
@@ -659,7 +698,7 @@ namespace Emby.XmlTv.Classes
             */
 
             var currentElementName = reader.Name;
-            var values = new [] { new { Language = reader.GetAttribute("lang"), Value = reader.ReadElementContentAsString() } }.ToList();
+            var values = new[] { new { Language = reader.GetAttribute("lang"), Value = reader.ReadElementContentAsString() } }.ToList();
 
             while (reader.Read())
             {
@@ -715,7 +754,7 @@ namespace Emby.XmlTv.Classes
                 result.StartDate = ParseDate(startValue).Value;
             }
 
-            
+
             var endValue = reader.GetAttribute("stop");
             if (string.IsNullOrEmpty(endValue))
             {
@@ -725,7 +764,7 @@ namespace Emby.XmlTv.Classes
             else
             {
                 result.EndDate = ParseDate(endValue).Value;
-            }            
+            }
         }
 
         public DateTime? ParseDate(string dateValue)

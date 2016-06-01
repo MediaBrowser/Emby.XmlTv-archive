@@ -36,6 +36,8 @@ namespace Emby.XmlTv.Entities
 
         public float? StarRating { get; set; }
 
+        public XmlTvIcon Icon { get; set; }
+
         public XmlTvProgram()
         {
             Credits = new List<XmlTvCredit>();
