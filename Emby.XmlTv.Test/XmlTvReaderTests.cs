@@ -93,6 +93,8 @@ namespace Emby.XmlTv.Test
             Assert.IsNull(programme.Episode.SeriesCount);
             Assert.AreEqual(4, programme.Episode.Episode);
             Assert.AreEqual(6, programme.Episode.EpisodeCount);
+            Assert.IsNotNull(programme.Premiere);
+            Assert.AreEqual("First showing on national terrestrial TV", programme.Premiere.Details);
         }
 
         [TestMethod]

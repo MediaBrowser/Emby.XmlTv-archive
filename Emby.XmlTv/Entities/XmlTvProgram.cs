@@ -38,6 +38,8 @@ namespace Emby.XmlTv.Entities
 
         public XmlTvIcon Icon { get; set; }
 
+        public XmlTvPremiere Premiere { get; set; }
+
         public XmlTvProgram()
         {
             Credits = new List<XmlTvCredit>();

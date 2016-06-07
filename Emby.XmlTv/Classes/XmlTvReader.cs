@@ -239,6 +239,10 @@ namespace Emby.XmlTv.Classes
                                 result.Icon = ProcessIconNode(xmlProg);
                                 xmlProg.Skip();
                                 break;
+                            case "premiere":
+                                ProcessPremiereNode(xmlProg, result);
+                                xmlProg.Skip();
+                                break;
                             default:
                                 // unknown, skip entire node
                                 xmlProg.Skip();
@@ -574,6 +578,23 @@ namespace Emby.XmlTv.Classes
         {
             // <title lang="en">Gino&apos;s Italian Escape</title>
             ProcessNode(reader, s => result.Title = s, _language);
+        }
+
+        public void ProcessPremiereNode(XmlReader reader, XmlTvProgram result)
+        {
+            // <title lang="en">Gino&apos;s Italian Escape</title>
+            ProcessNode(reader,
+                s =>
+                {
+                    if (result.Premiere == null)
+                    {
+                        result.Premiere = new XmlTvPremiere() { Details = s };
+                    }
+                    else
+                    {
+                        result.Premiere.Details = s;
+                    }
+                }, _language);
         }
 
         public XmlTvIcon ProcessIconNode(XmlReader reader)
