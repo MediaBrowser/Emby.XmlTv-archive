@@ -157,7 +157,7 @@ namespace Emby.XmlTv.Test
             var cancellationToken = new CancellationToken();
             var programmes = reader.GetProgrammes(channel.Id, startDate, startDate.AddDays(1), cancellationToken).ToList();
 
-            Assert.AreEqual(20, programmes.Count);
+            Assert.AreEqual(22, programmes.Count);
             var programme = programmes.SingleOrDefault(p => p.Title == "This is Comedy. Judd Apatow & Co.");
 
             /*
@@ -183,8 +183,8 @@ namespace Emby.XmlTv.Test
             */
 
             Assert.IsNotNull(programme);
-            Assert.AreEqual(new DateTime(2016, 02, 18, 5, 51, 0), programme.StartDate);
-            Assert.AreEqual(new DateTime(2016, 02, 18, 6, 54, 0), programme.EndDate);
+            Assert.AreEqual(new DateTime(2016, 02, 18, 4, 51, 0), programme.StartDate);
+            Assert.AreEqual(new DateTime(2016, 02, 18, 5, 54, 0), programme.EndDate);
             Assert.AreEqual("El resurgir creativo de la comedia estadounidense en los últimos 15 años ha tenido un nombre indiscutible, Judd Apatow, y unos colaboradores indispensables, sus amigos (actores, cómicos, escritores) Jonah Hill, Steve Carrell, Paul Rudd, Seth Rogen, Lena Dunham... A través de extractos de sus filmes y de entrevistas a algunos los miembros de su 'banda' (Adam Sandler, Lena Dunham o Jason Segel), este documental muestra la carrera de un productor y director excepcional que ha sido capaz de llevar la risa a su máxima expresión", programme.Description);
             Assert.AreEqual(2, programme.Categories.Count);
             Assert.AreEqual("Documentales", programme.Categories[0]);

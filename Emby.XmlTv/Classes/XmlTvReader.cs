@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Xml;
 
@@ -40,6 +42,7 @@ namespace Emby.XmlTv.Classes
         /// <returns></returns>
         public IEnumerable<XmlTvChannel> GetChannels()
         {
+            Logger.Info("Loading file {0}", _fileName);
             var reader = new XmlTextReader(_fileName);
 
             if (reader.ReadToDescendant("tv"))
@@ -148,6 +151,7 @@ namespace Emby.XmlTv.Classes
                     DateTime endDateUtc,
                     CancellationToken cancellationToken)
         {
+            Logger.Info("Loading file {0}", _fileName);
             var reader = new XmlTextReader(_fileName);
 
             if (reader.ReadToDescendant("tv"))
@@ -275,6 +279,7 @@ namespace Emby.XmlTv.Classes
             var results = new Dictionary<string, int>();
 
             //Loop through and parse out all elements and then lang= attributes
+            Logger.Info("Loading file {0}", _fileName);
             var reader = new XmlTextReader(_fileName);
             while (reader.Read())
             {
@@ -772,7 +777,7 @@ namespace Emby.XmlTv.Classes
             }
             else
             {
-                result.StartDate = ParseDate(startValue).Value;
+                result.StartDate = ParseDate(startValue).GetValueOrDefault();
             }
 
 
@@ -784,9 +789,11 @@ namespace Emby.XmlTv.Classes
             }
             else
             {
-                result.EndDate = ParseDate(endValue).Value;
+                result.EndDate = ParseDate(endValue).GetValueOrDefault();
             }
         }
+
+        public static Regex _regDateWithOffset = new Regex(@"^(?<dateDigits>[0-9]{4,14})(\s(?<dateOffset>[+-][0-9]{4}))?$", RegexOptions.Compiled);
 
         public DateTime? ParseDate(string dateValue)
         {
@@ -803,94 +810,61 @@ namespace Emby.XmlTv.Classes
 
             if (!string.IsNullOrEmpty(dateValue))
             {
-                // TODO: Determine the date format and parse accordingly
-                var dateComponents = dateValue.Split(Char.Parse(" "));
+                var completeDate = "20000101000000";
+                var dateComponent = string.Empty;
+                var dateOffset = "+00:00";
 
-                if (!string.IsNullOrEmpty(dateComponents[0]))
+                var match = _regDateWithOffset.Match(dateValue);
+                if (match.Success)
                 {
-                    // Take the numerics only
-                    var numericDate = new string(dateComponents[0].TakeWhile(char.IsDigit).ToArray());
-                    result = ParseDateComponent(numericDate);
+                    dateComponent = match.Groups["dateDigits"].Value;
+                    if (!String.IsNullOrEmpty(match.Groups["dateOffset"].Value))
+                    {
+                        dateOffset = match.Groups["dateOffset"].Value.Insert(3, ":"); // Add in the colon to ease parsing later
+                    }
+                }
+
+                // Pad out the date component part to 14 characaters so 2016061509 becomes 20160615090000
+                if (dateComponent.Length < 14)
+                {
+                    dateComponent = dateComponent + completeDate.Substring(dateComponent.Length, completeDate.Length - dateComponent.Length);
+                }
+
+                var standardDate = String.Format("{0} {1}", dateComponent, dateOffset);
+                DateTimeOffset parsedDateTime;
+                if (DateTimeOffset.TryParseExact(standardDate, "yyyyMMddHHmmss zzz", CultureInfo.CurrentCulture, DateTimeStyles.None, out parsedDateTime))
+                {
+                    result = parsedDateTime.LocalDateTime;
+                }
+                else
+                {
+                    Logger.Warn("Unable to parse the date {0} from standardised form {1}", dateValue, standardDate);
                 }
             }
 
             return result;
         }
 
-        public DateTime? ParseDateComponent(string value)
+        public string StandardiseDate(string value)
         {
-            // Validate that all the values are digits
-            if (value.Length != value.TakeWhile(char.IsDigit).ToArray().Length)
+            var completeDate = "20000101000000";
+            var dateComponent = string.Empty;
+            var dateOffset = "+0000";
+
+            var match = _regDateWithOffset.Match(value);
+            if (match.Success)
             {
-                return null;
+                dateComponent = match.Groups["dateDigits"].Value;
+                dateOffset = match.Groups["dateOffset"].Value;
             }
 
-            var year = 0;
-            if (value.Length > 3)
+            // Pad out the date component part to 14 characaters so 2016061509 becomes 20160615090000
+            if (dateComponent.Length < 14)
             {
-                year = int.Parse(value.Substring(0, 4));
-            }
-            else
-            {
-                return null;
+                dateComponent = dateComponent + completeDate.Substring(dateComponent.Length, completeDate.Length - dateComponent.Length);
             }
 
-            var month = 1;
-            if (value.Length > 5)
-            {
-                month = int.Parse(value.Substring(4, 2));
-            }
-
-            var day = 1;
-            if (value.Length > 7)
-            {
-                day = int.Parse(value.Substring(6, 2));
-            }
-
-            var hour = 0;
-            if (value.Length > 9)
-            {
-                hour = int.Parse(value.Substring(8, 2));
-            }
-
-            var minute = 0;
-            if (value.Length > 11)
-            {
-                minute = int.Parse(value.Substring(10, 2));
-            }
-
-            var second = 0;
-            if (value.Length > 13)
-            {
-                second = int.Parse(value.Substring(12, 2));
-            }
-
-            return new DateTime(year, month, day, hour, minute, second);
+            return String.Format("{0} {1}", dateComponent, dateOffset);
         }
-
-        //public DateTime? ParseLongToDate(long ldate)
-        //{
-        //    try
-        //    {
-        //        if (ldate < 1) return DateTime.MinValue;
-        //        ldate /= 100L;
-        //        var minute = (int)(ldate % 100L);
-        //        ldate /= 100L;
-        //        var hour = (int)(ldate % 100L);
-        //        ldate /= 100L;
-        //        var day = (int)(ldate % 100L);
-        //        ldate /= 100L;
-        //        var month = (int)(ldate % 100L);
-        //        ldate /= 100L;
-        //        var year = (int)ldate;
-        //        return new DateTime(year, month, day, hour, minute, 0, 0);
-        //    }
-        //    catch (Exception)
-        //    {
-        //        Logger.Error("Problem parsing date value {0}", ldate);
-        //    }
-
-        //    return null;
-        //}
     }
 }
