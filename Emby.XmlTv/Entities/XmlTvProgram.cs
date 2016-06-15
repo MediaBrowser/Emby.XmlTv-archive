@@ -24,8 +24,6 @@ namespace Emby.XmlTv.Entities
 
         public bool IsRepeat { get; set; }
 
-        public bool IsSeries { get; set; }
-
         public DateTime? CopyrightDate { get; set; }
 
         public XmlTvEpisode Episode { get; set; }
