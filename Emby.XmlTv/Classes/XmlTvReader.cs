@@ -186,12 +186,12 @@ namespace Emby.XmlTv.Classes
                 PopulateHeader(reader, result);
 
                 // First up, validate that this is the correct channel, and programme is within the time we are expecting
-                if (string.IsNullOrEmpty(result.ChannelId) || result.ChannelId != channelNumber)
+                if (!string.Equals(result.ChannelId, channelNumber, StringComparison.OrdinalIgnoreCase))
                 {
                     return null;
                 }
 
-                if (result.StartDate < startDateUtc || result.StartDate >= endDateUtc)
+                if (result.EndDate < startDateUtc || result.StartDate >= endDateUtc)
                 {
                     return null;
                 }
