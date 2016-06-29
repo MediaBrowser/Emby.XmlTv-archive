@@ -834,7 +834,7 @@ namespace Emby.XmlTv.Classes
                 DateTimeOffset parsedDateTime;
                 if (DateTimeOffset.TryParseExact(standardDate, "yyyyMMddHHmmss zzz", CultureInfo.CurrentCulture, DateTimeStyles.None, out parsedDateTime))
                 {
-                    result = new DateTime(parsedDateTime.LocalDateTime.Ticks);
+                    return parsedDateTime.UtcDateTime;
                 }
                 else
                 {
