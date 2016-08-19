@@ -36,6 +36,15 @@ namespace Emby.XmlTv.Classes
 
         public ILogger Logger => _logger ?? _safeLogger;
 
+        private XmlReader CreateXmlTextReader(string path)
+        {
+            XmlReaderSettings settings = new XmlReaderSettings();
+            settings.XmlResolver = null;
+            settings.DtdProcessing = DtdProcessing.Ignore;
+
+            return XmlReader.Create(path, settings);
+        }
+
         /// <summary>
         /// Gets the list of channels present in the XML
         /// </summary>
@@ -43,7 +52,7 @@ namespace Emby.XmlTv.Classes
         public IEnumerable<XmlTvChannel> GetChannels()
         {
             Logger.Info("Loading file {0}", _fileName);
-            var reader = new XmlTextReader(_fileName);
+            var reader = CreateXmlTextReader(_fileName);
 
             if (reader.ReadToDescendant("tv"))
             {
@@ -152,7 +161,7 @@ namespace Emby.XmlTv.Classes
                     CancellationToken cancellationToken)
         {
             Logger.Info("Loading file {0}", _fileName);
-            var reader = new XmlTextReader(_fileName);
+            var reader = CreateXmlTextReader(_fileName);
 
             if (reader.ReadToDescendant("tv"))
             {
@@ -280,7 +289,7 @@ namespace Emby.XmlTv.Classes
 
             //Loop through and parse out all elements and then lang= attributes
             Logger.Info("Loading file {0}", _fileName);
-            var reader = new XmlTextReader(_fileName);
+            var reader = CreateXmlTextReader(_fileName);
             while (reader.Read())
             {
                 if (cancellationToken.IsCancellationRequested)
