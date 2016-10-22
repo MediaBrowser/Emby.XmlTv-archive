@@ -16,7 +16,7 @@ namespace Emby.XmlTv.Classes
     public class XmlTvReader
     {
         private readonly ILogger _logger;
-        private readonly ILogger _safeLogger = new ConsoleLogger();
+        private readonly ILogger _safeLogger = new NullLogger();
 
         private readonly string _fileName;
         private readonly string _language;
@@ -39,7 +39,12 @@ namespace Emby.XmlTv.Classes
         private XmlReader CreateXmlTextReader(string path)
         {
             XmlReaderSettings settings = new XmlReaderSettings();
-            settings.XmlResolver = null;
+
+            // https://msdn.microsoft.com/en-us/library/system.xml.xmlreadersettings.xmlresolver(v=vs.110).aspx
+            // Looks like we don't need this anyway?
+            // Starting with the .NET Framework 4.5.2, this setting has a default value of null.
+            //settings.XmlResolver = null;
+
             settings.DtdProcessing = DtdProcessing.Ignore;
 
             return XmlReader.Create(path, settings);
@@ -85,40 +90,40 @@ namespace Emby.XmlTv.Classes
             var result = new XmlTvChannel() { Id = id };
             LogChannelProgress(reader, result);
 
-            var xmlChannel = reader.ReadSubtree();
-            xmlChannel.ReadStartElement(); // now, xmlProg is positioned on the first sub-element of <programme>
-
-            // Read out the data for each node and process individually
-            while (!xmlChannel.EOF)
+            using (var xmlChannel = reader.ReadSubtree())
             {
-                LogChannelProgress(reader, result);
+                xmlChannel.ReadStartElement(); // now, xmlProg is positioned on the first sub-element of <programme>
 
-                if (xmlChannel.NodeType == XmlNodeType.Element)
+                // Read out the data for each node and process individually
+                while (!xmlChannel.EOF)
                 {
-                    switch (xmlChannel.Name)
+                    LogChannelProgress(reader, result);
+
+                    if (xmlChannel.NodeType == XmlNodeType.Element)
                     {
-                        case "display-name":
-                            ProcessNode(xmlChannel, s => result.DisplayName = s, _language);
-                            break;
-                        case "url":
-                            result.Url = xmlChannel.ReadElementContentAsString();
-                            break;
-                        case "icon":
-                            result.Icon = ProcessIconNode(xmlChannel);
-                            xmlChannel.Skip();
-                            break;
-                        default:
-                            xmlChannel.Skip(); // unknown, skip entire node
-                            break;
+                        switch (xmlChannel.Name)
+                        {
+                            case "display-name":
+                                ProcessNode(xmlChannel, s => result.DisplayName = s, _language);
+                                break;
+                            case "url":
+                                result.Url = xmlChannel.ReadElementContentAsString();
+                                break;
+                            case "icon":
+                                result.Icon = ProcessIconNode(xmlChannel);
+                                xmlChannel.Skip();
+                                break;
+                            default:
+                                xmlChannel.Skip(); // unknown, skip entire node
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        xmlChannel.Skip();
                     }
                 }
-                else
-                {
-                    xmlChannel.Skip();
-                }
             }
-
-            xmlChannel.Close();
 
             if (string.IsNullOrEmpty(result.DisplayName))
             {
@@ -205,70 +210,70 @@ namespace Emby.XmlTv.Classes
                     return null;
                 }
 
-                var xmlProg = reader.ReadSubtree();
-                xmlProg.ReadStartElement(); // now, xmlProg is positioned on the first sub-element of <programme>
-
-                // Read out the data for each node and process individually
-                while (!xmlProg.EOF)
+                using (var xmlProg = reader.ReadSubtree())
                 {
-                    if (xmlProg.NodeType == XmlNodeType.Element)
+                    xmlProg.ReadStartElement(); // now, xmlProg is positioned on the first sub-element of <programme>
+
+                    // Read out the data for each node and process individually
+                    while (!xmlProg.EOF)
                     {
-                        switch (xmlProg.Name)
+                        if (xmlProg.NodeType == XmlNodeType.Element)
                         {
-                            case "title":
-                                ProcessTitleNode(xmlProg, result);
-                                break;
-                            case "category":
-                                ProcessCategory(xmlProg, result);
-                                break;
-                            case "country":
-                                ProcessCountry(xmlProg, result);
-                                break;
-                            case "desc":
-                                ProcessDescription(xmlProg, result);
-                                break;
-                            case "sub-title":
-                                ProcessSubTitle(xmlProg, result);
-                                break;
-                            case "previously-shown":
-                                ProcessPreviouslyShown(xmlProg, result);
-                                break;
-                            case "episode-num":
-                                ProcessEpisodeNum(xmlProg, result);
-                                break;
-                            case "date": // Copyright date
-                                ProcessCopyrightDate(xmlProg, result);
-                                break;
-                            case "star-rating": // Community Rating
-                                ProcessStarRating(xmlProg, result);
-                                break;
-                            case "rating": // Certification Rating
-                                ProcessRating(xmlProg, result);
-                                break;
-                            case "credits":
-                                ProcessCredits(xmlProg, result);
-                                break;
-                            case "icon":
-                                result.Icon = ProcessIconNode(xmlProg);
-                                xmlProg.Skip();
-                                break;
-                            case "premiere":
-                                ProcessPremiereNode(xmlProg, result);
-                                xmlProg.Skip();
-                                break;
-                            default:
-                                // unknown, skip entire node
-                                xmlProg.Skip();
-                                break;
+                            switch (xmlProg.Name)
+                            {
+                                case "title":
+                                    ProcessTitleNode(xmlProg, result);
+                                    break;
+                                case "category":
+                                    ProcessCategory(xmlProg, result);
+                                    break;
+                                case "country":
+                                    ProcessCountry(xmlProg, result);
+                                    break;
+                                case "desc":
+                                    ProcessDescription(xmlProg, result);
+                                    break;
+                                case "sub-title":
+                                    ProcessSubTitle(xmlProg, result);
+                                    break;
+                                case "previously-shown":
+                                    ProcessPreviouslyShown(xmlProg, result);
+                                    break;
+                                case "episode-num":
+                                    ProcessEpisodeNum(xmlProg, result);
+                                    break;
+                                case "date": // Copyright date
+                                    ProcessCopyrightDate(xmlProg, result);
+                                    break;
+                                case "star-rating": // Community Rating
+                                    ProcessStarRating(xmlProg, result);
+                                    break;
+                                case "rating": // Certification Rating
+                                    ProcessRating(xmlProg, result);
+                                    break;
+                                case "credits":
+                                    ProcessCredits(xmlProg, result);
+                                    break;
+                                case "icon":
+                                    result.Icon = ProcessIconNode(xmlProg);
+                                    xmlProg.Skip();
+                                    break;
+                                case "premiere":
+                                    ProcessPremiereNode(xmlProg, result);
+                                    xmlProg.Skip();
+                                    break;
+                                default:
+                                    // unknown, skip entire node
+                                    xmlProg.Skip();
+                                    break;
+                            }
+                        }
+                        else
+                        {
+                            xmlProg.Read();
                         }
                     }
-                    else
-                    {
-                        xmlProg.Read();
-                    }
                 }
-
-                xmlProg.Close();
                 return result;
             }
             catch (Exception ex)
