@@ -5,9 +5,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Xml;
-
 using Emby.XmlTv.Entities;
-
 using Patterns.Logging;
 
 namespace Emby.XmlTv.Classes
@@ -15,9 +13,6 @@ namespace Emby.XmlTv.Classes
     // Reads an XmlTv file
     public class XmlTvReader
     {
-        private readonly ILogger _logger;
-        private readonly ILogger _safeLogger = new NullLogger();
-
         private readonly string _fileName;
         private readonly string _language;
 
@@ -31,10 +26,10 @@ namespace Emby.XmlTv.Classes
         {
             _fileName = fileName;
             _language = language;
-            _logger = logger;
+            Logger = logger ?? new NullLogger();
         }
 
-        public ILogger Logger => _logger ?? _safeLogger;
+        private ILogger Logger { get; set; }
 
         private XmlReader CreateXmlTextReader(string path)
         {
@@ -57,26 +52,31 @@ namespace Emby.XmlTv.Classes
         public IEnumerable<XmlTvChannel> GetChannels()
         {
             Logger.Info("Loading file {0}", _fileName);
-            var reader = CreateXmlTextReader(_fileName);
+            var list = new List<XmlTvChannel>();
 
-            if (reader.ReadToDescendant("tv"))
+            using (var reader = CreateXmlTextReader(_fileName))
             {
-                if (reader.ReadToDescendant("channel"))
+                if (reader.ReadToDescendant("tv"))
                 {
-                    do
+                    if (reader.ReadToDescendant("channel"))
                     {
-                        var channel = GetChannel(reader);
-                        if (channel != null)
+                        do
                         {
-                            yield return channel;
+                            var channel = GetChannel(reader);
+                            if (channel != null)
+                            {
+                                list.Add(channel);
+                            }
                         }
+                        while (reader.ReadToFollowing("channel"));
                     }
-                    while (reader.ReadToFollowing("channel"));
                 }
             }
+
+            return list;
         }
 
-        public XmlTvChannel GetChannel(XmlReader reader)
+        private XmlTvChannel GetChannel(XmlReader reader)
         {
             var id = reader.GetAttribute("id");
 
@@ -134,7 +134,7 @@ namespace Emby.XmlTv.Classes
             return result;
         }
 
-        public void LogChannelProgress(XmlReader reader, XmlTvChannel channel)
+        private void LogChannelProgress(XmlReader reader, XmlTvChannel channel)
         {
             var id = channel != null ? channel.Id : string.Empty;
             var displayName = channel != null ? channel.DisplayName : string.Empty;
@@ -166,28 +166,33 @@ namespace Emby.XmlTv.Classes
                     CancellationToken cancellationToken)
         {
             Logger.Info("Loading file {0}", _fileName);
-            var reader = CreateXmlTextReader(_fileName);
+            var list = new List<XmlTvProgram>();
 
-            if (reader.ReadToDescendant("tv"))
+            using (var reader = CreateXmlTextReader(_fileName))
             {
-                if (reader.ReadToDescendant("programme"))
+                if (reader.ReadToDescendant("tv"))
                 {
-                    do
+                    if (reader.ReadToDescendant("programme"))
                     {
-                        if (cancellationToken.IsCancellationRequested)
+                        do
                         {
-                            continue; // Break out
-                        }
+                            if (cancellationToken.IsCancellationRequested)
+                            {
+                                continue; // Break out
+                            }
 
-                        var programme = GetProgramme(reader, channelNumber, startDateUtc, endDateUtc);
-                        if (programme != null)
-                        {
-                            yield return programme;
+                            var programme = GetProgramme(reader, channelNumber, startDateUtc, endDateUtc);
+                            if (programme != null)
+                            {
+                                list.Add(programme);
+                            }
                         }
+                        while (reader.ReadToFollowing("programme"));
                     }
-                    while (reader.ReadToFollowing("programme"));
                 }
             }
+
+            return list;
         }
 
         public XmlTvProgram GetProgramme(XmlReader reader, string channelNumber, DateTime startDateUtc, DateTime endDateUtc)
@@ -294,24 +299,26 @@ namespace Emby.XmlTv.Classes
 
             //Loop through and parse out all elements and then lang= attributes
             Logger.Info("Loading file {0}", _fileName);
-            var reader = CreateXmlTextReader(_fileName);
-            while (reader.Read())
+            using (var reader = CreateXmlTextReader(_fileName))
             {
-                if (cancellationToken.IsCancellationRequested)
+                while (reader.Read())
                 {
-                    continue; // Break out
-                }
-
-                if (reader.NodeType == XmlNodeType.Element)
-                {
-                    var language = reader.GetAttribute("lang");
-                    if (!String.IsNullOrEmpty(language))
+                    if (cancellationToken.IsCancellationRequested)
                     {
-                        if (!results.ContainsKey(language))
+                        continue; // Break out
+                    }
+
+                    if (reader.NodeType == XmlNodeType.Element)
+                    {
+                        var language = reader.GetAttribute("lang");
+                        if (!String.IsNullOrEmpty(language))
                         {
-                            results[language] = 0;
+                            if (!results.ContainsKey(language))
+                            {
+                                results[language] = 0;
+                            }
+                            results[language]++;
                         }
-                        results[language]++;
                     }
                 }
             }
@@ -413,7 +420,7 @@ namespace Emby.XmlTv.Classes
                 var textValue = reader.ReadElementContentAsString();
                 if (textValue.Contains("/"))
                 {
-                    var components = textValue.Split(char.Parse("/"));
+                    var components = textValue.Split('/');
                     float value;
                     if (float.TryParse(components[0], out value))
                     {
@@ -807,7 +814,7 @@ namespace Emby.XmlTv.Classes
             }
         }
 
-        public static Regex _regDateWithOffset = new Regex(@"^(?<dateDigits>[0-9]{4,14})(\s(?<dateOffset>[+-][0-9]{4}))?$", RegexOptions.Compiled);
+        public static Regex _regDateWithOffset = new Regex(@"^(?<dateDigits>[0-9]{4,14})(\s(?<dateOffset>[+-][0-9]{4}))?$");
 
         public DateTime? ParseDate(string dateValue)
         {
