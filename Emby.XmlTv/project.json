@@ -1,9 +1,17 @@
-﻿{
-  "supports": {},
-  "dependencies": {
-    "Patterns.Logging": "1.0.0.6"
-  },
-  "frameworks": {
-    ".NETPortable,Version=v4.5,Profile=Profile7": {}
-  }
+{
+    "frameworks":{
+        "netstandard1.6":{
+           "dependencies":{
+                "NETStandard.Library":"1.6.0",
+            }
+        },
+        ".NETPortable,Version=v4.5,Profile=Profile7":{
+            "buildOptions": {
+                "define": [  ]
+            },
+            "frameworkAssemblies":{
+                
+            }
+        }
+    }
 }

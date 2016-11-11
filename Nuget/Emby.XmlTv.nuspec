@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
     <metadata>
         <id>Emby.XmlTv</id>
-        <version>1.0.0.63</version>
+        <version>1.0.1</version>
         <title>Emby.XmlTv</title>
         <authors>Emby Team</authors>
         <owners>ebr,Luke,scottisafool</owners>
@@ -12,7 +12,6 @@
         <description>An XmlTv parsing library.</description>
         <copyright>Copyright © Emby 2013</copyright>
         <dependencies>
-            <dependency id="Patterns.Logging" version="1.0.0.6" />
         </dependencies>
     </metadata>
     <files>

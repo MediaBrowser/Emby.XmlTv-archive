@@ -55,7 +55,6 @@
     <Compile Include="Classes\XmlTvReader.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="project.json" />
     <None Include="XmlTvSchema.dtd">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <SubType>Designer</SubType>

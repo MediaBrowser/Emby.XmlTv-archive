@@ -6,7 +6,6 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Xml;
 using Emby.XmlTv.Entities;
-using Patterns.Logging;
 
 namespace Emby.XmlTv.Classes
 {
@@ -22,14 +21,11 @@ namespace Emby.XmlTv.Classes
         /// <param name="fileName">Name of the file.</param>
         /// <param name="language">The specific language to return.</param>
         /// <param name="logger">The logger.</param>
-        public XmlTvReader(string fileName, string language = null, ILogger logger = null)
+        public XmlTvReader(string fileName, string language = null)
         {
             _fileName = fileName;
             _language = language;
-            Logger = logger ?? new NullLogger();
         }
-
-        private ILogger Logger { get; set; }
 
         private XmlReader CreateXmlTextReader(string path)
         {
@@ -51,7 +47,6 @@ namespace Emby.XmlTv.Classes
         /// <returns></returns>
         public IEnumerable<XmlTvChannel> GetChannels()
         {
-            Logger.Info("Loading file {0}", _fileName);
             var list = new List<XmlTvChannel>();
 
             using (var reader = CreateXmlTextReader(_fileName))
@@ -82,7 +77,7 @@ namespace Emby.XmlTv.Classes
 
             if (string.IsNullOrEmpty(id))
             {
-                Logger.Error("No id found for channel row");
+                //Logger.Error("No id found for channel row");
                 // Log.Error("  channel#{0} doesnt contain an id", iChannel);
                 return null;
             }
@@ -127,7 +122,7 @@ namespace Emby.XmlTv.Classes
 
             if (string.IsNullOrEmpty(result.DisplayName))
             {
-                Logger.Error("No display-name found for channel {0}", id);
+                //Logger.Error("No display-name found for channel {0}", id);
                 return null;
             }
 
@@ -143,12 +138,12 @@ namespace Emby.XmlTv.Classes
             var nodeType = reader != null ? reader.NodeType.ToString() : string.Empty;
             var name = reader != null ? reader.Name : string.Empty;
 
-            Logger.Debug("Channel - NodeType: {0}, Name: {1}, Result.Id: {2}, Result.DisplayName: {3}, Result.Url: {4}",
-                nodeType,
-                name,
-                id,
-                displayName,
-                url);
+            //Logger.Debug("Channel - NodeType: {0}, Name: {1}, Result.Id: {2}, Result.DisplayName: {3}, Result.Url: {4}",
+            //    nodeType,
+            //    name,
+            //    id,
+            //    displayName,
+            //    url);
         }
 
         /// <summary>
@@ -165,7 +160,6 @@ namespace Emby.XmlTv.Classes
                     DateTime endDateUtc,
                     CancellationToken cancellationToken)
         {
-            Logger.Info("Loading file {0}", _fileName);
             var list = new List<XmlTvProgram>();
 
             using (var reader = CreateXmlTextReader(_fileName))
@@ -283,7 +277,7 @@ namespace Emby.XmlTv.Classes
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("Error parsing programme: {0}", ex, result);
+                //Logger.ErrorException("Error parsing programme: {0}", ex, result);
                 throw;
             }
 
@@ -298,7 +292,7 @@ namespace Emby.XmlTv.Classes
             var results = new Dictionary<string, int>();
 
             //Loop through and parse out all elements and then lang= attributes
-            Logger.Info("Loading file {0}", _fileName);
+            //Logger.Info("Loading file {0}", _fileName);
             using (var reader = CreateXmlTextReader(_fileName))
             {
                 while (reader.Read())
@@ -859,7 +853,7 @@ namespace Emby.XmlTv.Classes
                 }
                 else
                 {
-                    Logger.Warn("Unable to parse the date {0} from standardised form {1}", dateValue, standardDate);
+                    //Logger.Warn("Unable to parse the date {0} from standardised form {1}", dateValue, standardDate);
                 }
             }
 
