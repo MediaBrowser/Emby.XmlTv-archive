@@ -235,6 +235,9 @@ namespace Emby.XmlTv.Classes
                                 case "sub-title":
                                     ProcessSubTitle(xmlProg, result);
                                     break;
+                                case "new":
+                                    ProcessNew(xmlProg, result);
+                                    break;
                                 case "previously-shown":
                                     ProcessPreviouslyShown(xmlProg, result);
                                     break;
@@ -551,10 +554,20 @@ namespace Emby.XmlTv.Classes
                 result.PreviouslyShown = ParseDate(value);
                 if (result.PreviouslyShown != result.StartDate)
                 {
-                    result.IsRepeat = true;
+                    result.IsPreviouslyShown = true;
                 }
             }
+            else
+            {
+                result.IsPreviouslyShown = true;
+            }
 
+            reader.Skip(); // Move on
+        }
+
+        public void ProcessNew(XmlReader reader, XmlTvProgram result)
+        {
+            result.IsNew = true;
             reader.Skip(); // Move on
         }
 

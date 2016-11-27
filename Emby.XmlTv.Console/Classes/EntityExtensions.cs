@@ -49,7 +49,7 @@ namespace Emby.XmlTv.Console.Classes
             builder.AppendFormat("Star Rating:       {0}\r\n", programme.StarRating.HasValue ? programme.StarRating.Value.ToString() : string.Empty);
             builder.AppendFormat("Previously Shown:  {0:G}\r\n", programme.PreviouslyShown);
             builder.AppendFormat("Copyright Date:    {0:G}\r\n", programme.CopyrightDate);
-            builder.AppendFormat("Is Repeat:         {0}\r\n", programme.IsRepeat);
+            builder.AppendFormat("Is Repeat:         {0}\r\n", programme.IsPreviouslyShown);
             builder.AppendFormat("Icon:              {0}\r\n", programme.Icon != null ? programme.Icon.ToString() : string.Empty);
             builder.AppendLine("-------------------------------------------------------");
             return builder.ToString();

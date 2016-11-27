@@ -22,7 +22,8 @@ namespace Emby.XmlTv.Entities
 
         public DateTime? PreviouslyShown { get; set; }
 
-        public bool IsRepeat { get; set; }
+        public bool IsPreviouslyShown { get; set; }
+        public bool IsNew { get; set; }
 
         public DateTime? CopyrightDate { get; set; }
 
