@@ -198,5 +198,16 @@ namespace Emby.XmlTv.Test
             Assert.IsNull(programme.Episode.SeriesCount);
             Assert.IsNull(programme.Episode.Title);
         }
+
+        [TestMethod]
+        [DeploymentItem("Xml Files\\honeybee.xml")]
+        public void HoneybeeTest()
+        {
+            var testFile = Path.GetFullPath(@"honeybee.xml");
+            var reader = new XmlTvReader(testFile, null);
+
+            var channels = reader.GetChannels().ToList();
+            Assert.AreEqual(16, channels.Count);
+        }
     }
 }

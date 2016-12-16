@@ -83,17 +83,15 @@ namespace Emby.XmlTv.Classes
             }
 
             var result = new XmlTvChannel() { Id = id };
-            LogChannelProgress(reader, result);
 
             using (var xmlChannel = reader.ReadSubtree())
             {
-                xmlChannel.ReadStartElement(); // now, xmlProg is positioned on the first sub-element of <programme>
+                xmlChannel.MoveToContent();
+                xmlChannel.Read();
 
                 // Read out the data for each node and process individually
-                while (!xmlChannel.EOF)
+                while (!xmlChannel.EOF && xmlChannel.ReadState == ReadState.Interactive)
                 {
-                    LogChannelProgress(reader, result);
-
                     if (xmlChannel.NodeType == XmlNodeType.Element)
                     {
                         switch (xmlChannel.Name)
@@ -115,7 +113,7 @@ namespace Emby.XmlTv.Classes
                     }
                     else
                     {
-                        xmlChannel.Skip();
+                        xmlChannel.Read();
                     }
                 }
             }
@@ -127,23 +125,6 @@ namespace Emby.XmlTv.Classes
             }
 
             return result;
-        }
-
-        private void LogChannelProgress(XmlReader reader, XmlTvChannel channel)
-        {
-            var id = channel != null ? channel.Id : string.Empty;
-            var displayName = channel != null ? channel.DisplayName : string.Empty;
-            var url = channel != null ? channel.Url : string.Empty;
-
-            var nodeType = reader != null ? reader.NodeType.ToString() : string.Empty;
-            var name = reader != null ? reader.Name : string.Empty;
-
-            //Logger.Debug("Channel - NodeType: {0}, Name: {1}, Result.Id: {2}, Result.DisplayName: {3}, Result.Url: {4}",
-            //    nodeType,
-            //    name,
-            //    id,
-            //    displayName,
-            //    url);
         }
 
         /// <summary>
@@ -193,11 +174,10 @@ namespace Emby.XmlTv.Classes
         {
             var result = new XmlTvProgram();
 
-            try
+            PopulateHeader(reader, result);
+
+            using (var xmlProg = reader.ReadSubtree())
             {
-
-                PopulateHeader(reader, result);
-
                 // First up, validate that this is the correct channel, and programme is within the time we are expecting
                 if (!string.Equals(result.ChannelId, channelNumber, StringComparison.OrdinalIgnoreCase))
                 {
@@ -209,81 +189,76 @@ namespace Emby.XmlTv.Classes
                     return null;
                 }
 
-                using (var xmlProg = reader.ReadSubtree())
-                {
-                    xmlProg.ReadStartElement(); // now, xmlProg is positioned on the first sub-element of <programme>
+                xmlProg.MoveToContent();
+                xmlProg.Read();
 
-                    // Read out the data for each node and process individually
-                    while (!xmlProg.EOF)
+                // Loop through each element
+                while (!xmlProg.EOF && xmlProg.ReadState == ReadState.Interactive)
+                {
+                    if (xmlProg.NodeType == XmlNodeType.Element)
                     {
-                        if (xmlProg.NodeType == XmlNodeType.Element)
+                        switch (xmlProg.Name)
                         {
-                            switch (xmlProg.Name)
-                            {
-                                case "title":
-                                    ProcessTitleNode(xmlProg, result);
-                                    break;
-                                case "category":
-                                    ProcessCategory(xmlProg, result);
-                                    break;
-                                case "country":
-                                    ProcessCountry(xmlProg, result);
-                                    break;
-                                case "desc":
-                                    ProcessDescription(xmlProg, result);
-                                    break;
-                                case "sub-title":
-                                    ProcessSubTitle(xmlProg, result);
-                                    break;
-                                case "new":
-                                    ProcessNew(xmlProg, result);
-                                    break;
-                                case "previously-shown":
-                                    ProcessPreviouslyShown(xmlProg, result);
-                                    break;
-                                case "episode-num":
-                                    ProcessEpisodeNum(xmlProg, result);
-                                    break;
-                                case "date": // Copyright date
-                                    ProcessCopyrightDate(xmlProg, result);
-                                    break;
-                                case "star-rating": // Community Rating
-                                    ProcessStarRating(xmlProg, result);
-                                    break;
-                                case "rating": // Certification Rating
-                                    ProcessRating(xmlProg, result);
-                                    break;
-                                case "credits":
-                                    ProcessCredits(xmlProg, result);
-                                    break;
-                                case "icon":
-                                    result.Icon = ProcessIconNode(xmlProg);
-                                    xmlProg.Skip();
-                                    break;
-                                case "premiere":
-                                    ProcessPremiereNode(xmlProg, result);
-                                    xmlProg.Skip();
-                                    break;
-                                default:
-                                    // unknown, skip entire node
-                                    xmlProg.Skip();
-                                    break;
-                            }
-                        }
-                        else
-                        {
-                            xmlProg.Read();
+                            case "title":
+                                ProcessTitleNode(xmlProg, result);
+                                break;
+                            case "category":
+                                ProcessCategory(xmlProg, result);
+                                break;
+                            case "country":
+                                ProcessCountry(xmlProg, result);
+                                break;
+                            case "desc":
+                                ProcessDescription(xmlProg, result);
+                                break;
+                            case "sub-title":
+                                ProcessSubTitle(xmlProg, result);
+                                break;
+                            case "new":
+                                ProcessNew(xmlProg, result);
+                                break;
+                            case "previously-shown":
+                                ProcessPreviouslyShown(xmlProg, result);
+                                break;
+                            case "episode-num":
+                                ProcessEpisodeNum(xmlProg, result);
+                                break;
+                            case "date": // Copyright date
+                                ProcessCopyrightDate(xmlProg, result);
+                                break;
+                            case "star-rating": // Community Rating
+                                ProcessStarRating(xmlProg, result);
+                                break;
+                            case "rating": // Certification Rating
+                                ProcessRating(xmlProg, result);
+                                break;
+                            case "credits":
+                                using (var subtree = xmlProg.ReadSubtree())
+                                {
+                                    ProcessCredits(subtree, result);
+                                }
+                                break;
+                            case "icon":
+                                result.Icon = ProcessIconNode(xmlProg);
+                                xmlProg.Skip();
+                                break;
+                            case "premiere":
+                                ProcessPremiereNode(xmlProg, result);
+                                xmlProg.Skip();
+                                break;
+                            default:
+                                // unknown, skip entire node
+                                xmlProg.Skip();
+                                break;
                         }
                     }
+                    else
+                    {
+                        xmlProg.Read();
+                    }
                 }
-                return result;
             }
-            catch (Exception ex)
-            {
-                //Logger.ErrorException("Error parsing programme: {0}", ex, result);
-                throw;
-            }
-
+            return result;
         }
 
         /// <summary>
@@ -344,17 +319,18 @@ namespace Emby.XmlTv.Classes
             }
         }
 
-        public void ProcessCredits(XmlReader xmlProg, XmlTvProgram result)
+        public void ProcessCredits(XmlReader creditsXml, XmlTvProgram result)
         {
-            var creditsXml = xmlProg.ReadSubtree();
-            creditsXml.ReadStartElement();
+            creditsXml.MoveToContent();
+            creditsXml.Read();
 
-            while (!creditsXml.EOF)
+            // Loop through each element
+            while (!creditsXml.EOF && creditsXml.ReadState == ReadState.Interactive)
             {
                 if (creditsXml.NodeType == XmlNodeType.Element)
                 {
                     XmlTvCredit credit = null;
-                    switch (xmlProg.Name)
+                    switch (creditsXml.Name)
                     {
                         case "director":
                             credit = new XmlTvCredit() { Type = XmlTvCreditType.Director };
@@ -390,7 +366,7 @@ namespace Emby.XmlTv.Classes
 
                     if (credit != null)
                     {
-                        credit.Name = xmlProg.ReadElementContentAsString();
+                        credit.Name = creditsXml.ReadElementContentAsString();
                         result.Credits.Add(credit);
                     }
                     else
