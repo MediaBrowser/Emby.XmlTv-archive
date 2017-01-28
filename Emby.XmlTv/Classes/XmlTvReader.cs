@@ -443,6 +443,9 @@ namespace Emby.XmlTv.Classes
             var episodeSystem = reader.GetAttribute("system");
             switch (episodeSystem)
             {
+                case "dd_progid":
+                    ParseEpisodeDataForProgramId(reader, result);
+                    break;
                 case "xmltv_ns":
                     ParseEpisodeDataForXmlTvNs(reader, result);
                     break;
@@ -473,6 +476,15 @@ namespace Emby.XmlTv.Classes
                 // Take everything from the hash to the end.
                 //TODO: This could be textual - how do we populate an Int32
                 // result.EpisodeNumber
+            }
+        }
+
+        public void ParseEpisodeDataForProgramId(XmlReader reader, XmlTvProgram result)
+        {
+            var value = reader.ReadElementContentAsString();
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                result.ProgramId = value;
             }
         }
 
