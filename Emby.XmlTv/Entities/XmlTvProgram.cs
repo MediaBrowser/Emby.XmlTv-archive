@@ -40,6 +40,8 @@ namespace Emby.XmlTv.Entities
 
         public XmlTvPremiere Premiere { get; set; }
 
+        public string IceTvEpisodeNumber { get; set; }
+
         public XmlTvProgram()
         {
             Credits = new List<XmlTvCredit>();

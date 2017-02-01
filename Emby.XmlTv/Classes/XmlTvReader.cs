@@ -446,6 +446,9 @@ namespace Emby.XmlTv.Classes
                 case "dd_progid":
                     ParseEpisodeDataForProgramId(reader, result);
                     break;
+                case "icetv":
+                    result.IceTvEpisodeNumber = reader.ReadElementContentAsString();
+                    break;
                 case "xmltv_ns":
                     ParseEpisodeDataForXmlTvNs(reader, result);
                     break;
