@@ -38,6 +38,11 @@ namespace Emby.XmlTv.Classes
 
             settings.DtdProcessing = DtdProcessing.Ignore;
 
+            settings.CheckCharacters = false;
+            settings.IgnoreProcessingInstructions = true;
+            settings.IgnoreComments = true;
+            //settings.ValidationType = ValidationType.None;
+
             return XmlReader.Create(path, settings);
         }
 
@@ -130,13 +135,13 @@ namespace Emby.XmlTv.Classes
         /// <summary>
         /// Gets the programmes for a specified channel
         /// </summary>
-        /// <param name="channelNumber">The channel number.</param>
+        /// <param name="channelId">The channel id.</param>
         /// <param name="startDateUtc">The UTC start date.</param>
         /// <param name="endDateUtc">The UTC end date.</param>
         /// <param name="cancellationToken">A cancellation token.</param>
         /// <returns></returns>
         public IEnumerable<XmlTvProgram> GetProgrammes(
-                    string channelNumber,
+                    string channelId,
                     DateTime startDateUtc,
                     DateTime endDateUtc,
                     CancellationToken cancellationToken)
@@ -156,7 +161,7 @@ namespace Emby.XmlTv.Classes
                                 continue; // Break out
                             }
 
-                            var programme = GetProgramme(reader, channelNumber, startDateUtc, endDateUtc);
+                            var programme = GetProgramme(reader, channelId, startDateUtc, endDateUtc);
                             if (programme != null)
                             {
                                 list.Add(programme);
@@ -170,7 +175,7 @@ namespace Emby.XmlTv.Classes
             return list;
         }
 
-        public XmlTvProgram GetProgramme(XmlReader reader, string channelNumber, DateTime startDateUtc, DateTime endDateUtc)
+        public XmlTvProgram GetProgramme(XmlReader reader, string channelId, DateTime startDateUtc, DateTime endDateUtc)
         {
             var result = new XmlTvProgram();
 
@@ -179,7 +184,7 @@ namespace Emby.XmlTv.Classes
             using (var xmlProg = reader.ReadSubtree())
             {
                 // First up, validate that this is the correct channel, and programme is within the time we are expecting
-                if (!string.Equals(result.ChannelId, channelNumber, StringComparison.OrdinalIgnoreCase))
+                if (!string.Equals(result.ChannelId, channelId, StringComparison.OrdinalIgnoreCase))
                 {
                     return null;
                 }
