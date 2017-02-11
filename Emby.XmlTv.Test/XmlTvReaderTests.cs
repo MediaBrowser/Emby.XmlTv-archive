@@ -208,6 +208,10 @@ namespace Emby.XmlTv.Test
 
             var channels = reader.GetChannels().ToList();
             Assert.AreEqual(16, channels.Count);
+
+            var programs = reader.GetProgrammes("2013.honeybee.it", DateTime.UtcNow.AddYears(-1),
+                DateTime.UtcNow.AddYears(1), CancellationToken.None).ToList();
+            Assert.AreEqual(297, programs.Count);
         }
     }
 }

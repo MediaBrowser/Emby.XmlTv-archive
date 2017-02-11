@@ -238,9 +238,16 @@ namespace Emby.XmlTv.Classes
                                 ProcessRating(xmlProg, result);
                                 break;
                             case "credits":
-                                using (var subtree = xmlProg.ReadSubtree())
+                                if (xmlProg.IsEmptyElement)
                                 {
-                                    ProcessCredits(subtree, result);
+                                    xmlProg.Skip();
+                                }
+                                else
+                                {
+                                    using (var subtree = xmlProg.ReadSubtree())
+                                    {
+                                        ProcessCredits(subtree, result);
+                                    }
                                 }
                                 break;
                             case "icon":
