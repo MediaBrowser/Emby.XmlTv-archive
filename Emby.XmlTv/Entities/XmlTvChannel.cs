@@ -7,6 +7,7 @@ namespace Emby.XmlTv.Entities
     {
         public String Id { get; set; }
         public String DisplayName { get; set; }
+        public String Number { get; set; }
         public string Url { get; set; }
         public XmlTvIcon Icon { get; set; }
 

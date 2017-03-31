@@ -17,7 +17,7 @@ namespace Emby.XmlTv.Test
         public void UK_DataTest_ChannelsTest()
         {
             var testFile = Path.GetFullPath(@"UK_Data.xml");
-            var reader = new XmlTvReader(testFile, null);
+            var reader = new XmlTvReader(testFile);
 
             var channels = reader.GetChannels().ToList();
             Assert.AreEqual(5, channels.Count);
@@ -26,6 +26,7 @@ namespace Emby.XmlTv.Test
             var channel = channels.SingleOrDefault(c => c.Id == "UK_RT_2667");
             Assert.IsNotNull(channel);
             Assert.AreEqual("BBC1 HD", channel.DisplayName);
+            Assert.AreEqual("7.1", channel.Number);
             Assert.IsNotNull(channel.Icon);
             Assert.AreEqual("Logo_UK_RT_2667", channel.Icon.Source);
             Assert.AreEqual(100, channel.Icon.Width);

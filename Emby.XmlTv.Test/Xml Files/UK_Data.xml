@@ -2,6 +2,7 @@
 <tv date="20151126" generator-name="XMLTV GUI V. 3.14.01W" generator-url="http://www.birtles.org.uk/xmltv">
   <channel id="UK_RT_2667">
     <display-name lang="en">BBC1 HD</display-name>
+    <display-name lang="en">7-1</display-name>
     <icon src="Logo_UK_RT_2667" width="100" height="200" />
   </channel>
   <channel id="UK_RT_105">

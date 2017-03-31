@@ -102,7 +102,7 @@ namespace Emby.XmlTv.Classes
                         switch (xmlChannel.Name)
                         {
                             case "display-name":
-                                ProcessNode(xmlChannel, s => result.DisplayName = s, _language);
+                                ProcessNode(xmlChannel, s => result.DisplayName = s, _language, s => SetChannelNumber(result, s));
                                 break;
                             case "url":
                                 result.Url = xmlChannel.ReadElementContentAsString();
@@ -130,6 +130,16 @@ namespace Emby.XmlTv.Classes
             }
 
             return result;
+        }
+
+        private void SetChannelNumber(XmlTvChannel channel, string value)
+        {
+            value = value.Replace("-", ".");
+            double number;
+            if (double.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out number))
+            {
+                channel.Number = value;
+            }
         }
 
         /// <summary>
@@ -689,7 +699,7 @@ namespace Emby.XmlTv.Classes
         //    setter(result);
         //}
 
-        public void ProcessNode(XmlReader reader, Action<string> setter, string languageRequired = null)
+        public void ProcessNode(XmlReader reader, Action<string> setter, string languageRequired = null, Action<string> allOccurrencesSetter = null)
         {
             /*
             <title lang="es">Homes Under the Hammer - Spanish</title>
@@ -711,22 +721,36 @@ namespace Emby.XmlTv.Classes
 
             // We will always use the first value - so that if there are no matches we can return something
             var currentElementName = reader.Name;
-            var foundMatch = languageRequired == reader.GetAttribute("lang"); // If there is no language specified then the first is the match
+            var foundMatch = string.Equals(languageRequired, reader.GetAttribute("lang"), StringComparison.OrdinalIgnoreCase); // If there is no language specified then the first is the match
             var result = reader.ReadElementContentAsString();
+            if (allOccurrencesSetter != null)
+            {
+                allOccurrencesSetter(result);
+            }
 
             while (reader.Read())
             {
-                if (reader.NodeType == XmlNodeType.Element && reader.Name != currentElementName)
+                if (reader.NodeType == XmlNodeType.Element)
                 {
-                    break;
-                }
-
-                if (reader.NodeType == XmlNodeType.Element && reader.Name == currentElementName)
-                {
-                    if (!foundMatch && languageRequired == reader.GetAttribute("lang"))
+                    if (reader.Name != currentElementName)
                     {
-                        result = reader.ReadElementContentAsString();
-                        foundMatch = true;
+                        break;
+                    }
+
+                    if (reader.Name == currentElementName)
+                    {
+                        var currentValue = reader.ReadElementContentAsString();
+
+                        if (allOccurrencesSetter != null)
+                        {
+                            allOccurrencesSetter(currentValue);
+                        }
+
+                        if (!foundMatch && string.Equals(languageRequired, reader.GetAttribute("lang"), StringComparison.OrdinalIgnoreCase))
+                        {
+                            result = currentValue;
+                            foundMatch = true;
+                        }
                     }
                 }
             }
