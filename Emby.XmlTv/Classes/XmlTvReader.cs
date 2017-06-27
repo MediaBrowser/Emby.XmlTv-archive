@@ -20,10 +20,15 @@ namespace Emby.XmlTv.Classes
         /// </summary>
         /// <param name="fileName">Name of the file.</param>
         /// <param name="language">The specific language to return.</param>
-        /// <param name="logger">The logger.</param>
         public XmlTvReader(string fileName, string language = null)
         {
             _fileName = fileName;
+
+            // Normalize null/string.empty
+            if (string.IsNullOrWhiteSpace(language))
+            {
+                language = null;
+            }
             _language = language;
         }
 
@@ -719,43 +724,73 @@ namespace Emby.XmlTv.Classes
                 - Language = en     Homes Under the Hammer - English
             */
 
+            var results = new List<Tuple<string, string>>();
+
             // We will always use the first value - so that if there are no matches we can return something
             var currentElementName = reader.Name;
-            var foundMatch = string.Equals(languageRequired, reader.GetAttribute("lang"), StringComparison.OrdinalIgnoreCase); // If there is no language specified then the first is the match
-            var result = reader.ReadElementContentAsString();
+
+            var lang = reader.HasAttributes ? reader.GetAttribute("lang") : null;
+            var currentValue = reader.ReadElementContentAsString();
+            results.Add(new Tuple<string, string>(currentValue, lang));
+
             if (allOccurrencesSetter != null)
             {
-                allOccurrencesSetter(result);
+                allOccurrencesSetter(currentValue);
             }
 
-            while (reader.Read())
+            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
-                    if (reader.Name != currentElementName)
-                    {
-                        break;
-                    }
-
                     if (reader.Name == currentElementName)
                     {
-                        var currentValue = reader.ReadElementContentAsString();
+                        lang = reader.HasAttributes ? reader.GetAttribute("lang") : null;
+                        currentValue = reader.ReadElementContentAsString();
 
                         if (allOccurrencesSetter != null)
                         {
                             allOccurrencesSetter(currentValue);
                         }
+                        
+                        results.Add(new Tuple<string, string>(currentValue, lang));
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                else
+                {
+                    reader.Read();
+                }
+            }
 
-                        if (!foundMatch && string.Equals(languageRequired, reader.GetAttribute("lang"), StringComparison.OrdinalIgnoreCase))
-                        {
-                            result = currentValue;
-                            foundMatch = true;
-                        }
+            if (languageRequired != null)
+            {
+                foreach (var result in results)
+                {
+                    if (string.Equals(languageRequired, result.Item2, StringComparison.OrdinalIgnoreCase))
+                    {
+                        setter(result.Item1);
+                        return;
                     }
                 }
             }
 
-            setter(result);
+            foreach (var result in results)
+            {
+                if (string.IsNullOrWhiteSpace(result.Item2))
+                {
+                    setter(result.Item1);
+                    return;
+                }
+            }
+
+            foreach (var result in results)
+            {
+                setter(result.Item1);
+                return;
+            }
         }
 
         public void ProcessMultipleNodes(XmlReader reader, Action<string> setter, string languageRequired = null)
