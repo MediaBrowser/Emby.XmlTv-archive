@@ -58,5 +58,29 @@ namespace Emby.XmlTv.Test
             Assert.AreEqual(DateTime.Parse("01 Jan 2016 13:00:00"), reader.ParseDate("201601011200 -0100"));
             Assert.AreEqual(DateTime.Parse("01 Jan 2016 13:00:00"), reader.ParseDate("20160101120000 -0100"));
         }
+
+        [TestMethod]
+        [DeploymentItem("Xml Files\\MultilanguageData.xml")]
+        public void Should_HandleSpaces()
+        {
+            var testFile = Path.GetFullPath(@"MultilanguageData.xml");
+            var reader = new XmlTvReader(testFile, "es");
+
+            // parse variations on 1:00AM
+            Assert.AreEqual(DateTime.Parse("01 Jan 2016 12:00:00"), reader.ParseDate("20160101120000 +000"));
+            Assert.AreEqual(DateTime.Parse("01 Jan 2016 12:00:00"), reader.ParseDate("20160101120000 +00"));
+            Assert.AreEqual(DateTime.Parse("01 Jan 2016 12:00:00"), reader.ParseDate("20160101120000 +0"));
+        }
+
+        [TestMethod]
+        [DeploymentItem("Xml Files\\MultilanguageData.xml")]
+        public void Should_HandleSpaces2()
+        {
+            var testFile = Path.GetFullPath(@"MultilanguageData.xml");
+            var reader = new XmlTvReader(testFile, "es");
+
+            // parse variations on 1:00AM
+            Assert.AreEqual(DateTime.Parse("01 Jan 2016 12:00:00"), reader.ParseDate("20160101120000 0"));
+        }
     }
 }

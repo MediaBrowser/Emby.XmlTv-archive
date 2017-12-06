@@ -883,7 +883,7 @@ namespace Emby.XmlTv.Classes
             }
         }
 
-        public static Regex _regDateWithOffset = new Regex(@"^(?<dateDigits>[0-9]{4,14})(\s(?<dateOffset>[+-][0-9]{4}))?$");
+        public static Regex _regDateWithOffset = new Regex(@"^(?<dateDigits>[0-9]{4,14})(\s(?<dateOffset>[+-]*[0-9]{1,4}))?$");
 
         public DateTime? ParseDate(string dateValue)
         {
@@ -910,7 +910,15 @@ namespace Emby.XmlTv.Classes
                     dateComponent = match.Groups["dateDigits"].Value;
                     if (!String.IsNullOrEmpty(match.Groups["dateOffset"].Value))
                     {
-                        dateOffset = match.Groups["dateOffset"].Value.Insert(3, ":"); // Add in the colon to ease parsing later
+                        dateOffset = match.Groups["dateOffset"].Value; // Add in the colon to ease parsing later
+                        if (dateOffset.Length == 5)
+                        {
+                            dateOffset = dateOffset.Insert(3, ":"); // Add in the colon to ease parsing later
+                        }
+                        else
+                        {
+                            dateOffset = "+00:00";
+                        }
                     }
                 }
 
