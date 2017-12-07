@@ -474,7 +474,7 @@ namespace Emby.XmlTv.Classes
                     ParseEpisodeDataForProgramId(reader, result);
                     break;
                 case "icetv":
-                    result.IceTvEpisodeNumber = reader.ReadElementContentAsString();
+                    result.ProviderIds["icetv"] = reader.ReadElementContentAsString();
                     break;
                 case "xmltv_ns":
                     ParseEpisodeDataForXmlTvNs(reader, result);
@@ -482,9 +482,72 @@ namespace Emby.XmlTv.Classes
                 case "onscreen":
                     ParseEpisodeDataForOnScreen(reader, result);
                     break;
+                case "thetvdb.com":
+                    ParseTvdbSystem(reader, result);
+                    break;
+                case "imdb.com":
+                    ParseImdbSystem(reader, result);
+                    break;
+                case "SxxExx":
+                    // TODO
+                    // <episode-num system="SxxExx">S03E12</episode-num>
+                    reader.Skip();
+                    break;
                 default: // Handles empty string and nulls
                     reader.Skip();
                     break;
+            }
+        }
+
+        public void ParseImdbSystem(XmlReader reader, XmlTvProgram result)
+        {
+            // <episode-num system="imdb.com">series/tt1837576</episode-num>
+            // <episode-num system="imdb.com">episode/tt3288596</episode-num>
+
+            var value = reader.ReadElementContentAsString();
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return;
+            }
+            var parts = value.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+
+            if (parts.Length != 2)
+            {
+                return;
+            }
+
+            if (string.Equals(parts[0], "series", StringComparison.OrdinalIgnoreCase))
+            {
+                result.SeriesProviderIds["imdb"] = parts[1];
+            }
+
+            else if (string.Equals(parts[0], "episode", StringComparison.OrdinalIgnoreCase))
+            {
+                result.ProviderIds["imdb"] = parts[1];
+            }
+        }
+
+        public void ParseTvdbSystem(XmlReader reader, XmlTvProgram result)
+        {
+            // <episode-num system="thetvdb.com">series/248841</episode-num>
+            // <episode-num system="thetvdb.com">episode/4749206</episode-num>
+
+            var value = reader.ReadElementContentAsString();
+            var parts = value.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+
+            if (parts.Length != 2)
+            {
+                return;
+            }
+
+            if (string.Equals(parts[0], "series", StringComparison.OrdinalIgnoreCase))
+            {
+                result.SeriesProviderIds["tvdb"] = parts[1];
+            }
+
+            else if (string.Equals(parts[0], "episode", StringComparison.OrdinalIgnoreCase))
+            {
+                result.ProviderIds["tvdb"] = parts[1];
             }
         }
 
@@ -751,7 +814,7 @@ namespace Emby.XmlTv.Classes
                         {
                             allOccurrencesSetter(currentValue);
                         }
-                        
+
                         results.Add(new Tuple<string, string>(currentValue, lang));
                     }
                     else

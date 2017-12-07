@@ -40,7 +40,8 @@ namespace Emby.XmlTv.Entities
 
         public XmlTvPremiere Premiere { get; set; }
 
-        public string IceTvEpisodeNumber { get; set; }
+        public Dictionary<string, string> ProviderIds { get; set; }
+        public Dictionary<string, string> SeriesProviderIds { get; set; }
 
         public XmlTvProgram()
         {
@@ -48,6 +49,9 @@ namespace Emby.XmlTv.Entities
             Categories = new List<string>();
             Countries = new List<string>();
             Episode = new XmlTvEpisode();
+
+            ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            SeriesProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
 
         public bool Equals(XmlTvProgram other)
