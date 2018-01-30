@@ -600,7 +600,7 @@ namespace Emby.XmlTv.Classes
                 if (int.TryParse(seriesComponents[0], out parsedInt))
                 {
                     result.Episode.Series = parsedInt + 1;
-                    if (seriesComponents.Count() == 2)
+                    if (seriesComponents.Length == 2)
                     {
                         if (int.TryParse(seriesComponents[1], out parsedInt))
                         {
@@ -610,39 +610,45 @@ namespace Emby.XmlTv.Classes
                 }
             }
 
-            if (!string.IsNullOrEmpty(components[1]))
+            if (components.Length >= 2)
             {
-                // Handle either "5/12" or "5"
-                var episodeComponents = components[1].Split(new[] { "/" }, StringSplitOptions.None);
-
-                // handle the zero basing!
-                if (int.TryParse(episodeComponents[0], out parsedInt))
+                if (!string.IsNullOrEmpty(components[1]))
                 {
-                    result.Episode.Episode = parsedInt + 1;
-                    if (episodeComponents.Count() == 2)
+                    // Handle either "5/12" or "5"
+                    var episodeComponents = components[1].Split(new[] { "/" }, StringSplitOptions.None);
+
+                    // handle the zero basing!
+                    if (int.TryParse(episodeComponents[0], out parsedInt))
                     {
-                        if (int.TryParse(episodeComponents[1], out parsedInt))
+                        result.Episode.Episode = parsedInt + 1;
+                        if (episodeComponents.Count() == 2)
                         {
-                            result.Episode.EpisodeCount = parsedInt;
+                            if (int.TryParse(episodeComponents[1], out parsedInt))
+                            {
+                                result.Episode.EpisodeCount = parsedInt;
+                            }
                         }
                     }
                 }
             }
 
-            if (!string.IsNullOrEmpty(components[2]))
+            if (components.Length >= 3)
             {
-                // Handle either "5/12" or "5"
-                var partComponents = components[2].Split(new[] { "/" }, StringSplitOptions.None);
-
-                // handle the zero basing!
-                if (int.TryParse(partComponents[0], out parsedInt))
+                if (!string.IsNullOrEmpty(components[2]))
                 {
-                    result.Episode.Part = parsedInt + 1;
-                    if (partComponents.Count() == 2)
+                    // Handle either "5/12" or "5"
+                    var partComponents = components[2].Split(new[] { "/" }, StringSplitOptions.None);
+
+                    // handle the zero basing!
+                    if (int.TryParse(partComponents[0], out parsedInt))
                     {
-                        if (int.TryParse(partComponents[1], out parsedInt))
+                        result.Episode.Part = parsedInt + 1;
+                        if (partComponents.Count() == 2)
                         {
-                            result.Episode.PartCount = parsedInt;
+                            if (int.TryParse(partComponents[1], out parsedInt))
+                            {
+                                result.Episode.PartCount = parsedInt;
+                            }
                         }
                     }
                 }
