@@ -488,6 +488,9 @@ namespace Emby.XmlTv.Classes
                 case "imdb.com":
                     ParseImdbSystem(reader, result);
                     break;
+                case "themoviedb.org":
+                    ParseMovieDbSystem(reader, result);
+                    break;
                 case "SxxExx":
                     // TODO
                     // <episode-num system="SxxExx">S03E12</episode-num>
@@ -496,6 +499,25 @@ namespace Emby.XmlTv.Classes
                 default: // Handles empty string and nulls
                     reader.Skip();
                     break;
+            }
+        }
+
+        public void ParseMovieDbSystem(XmlReader reader, XmlTvProgram result)
+        {
+            // <episode-num system="thetvdb.com">series/248841</episode-num>
+            // <episode-num system="thetvdb.com">episode/4749206</episode-num>
+
+            var value = reader.ReadElementContentAsString();
+            var parts = value.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+
+            if (string.Equals(parts[0], "series", StringComparison.OrdinalIgnoreCase))
+            {
+                result.SeriesProviderIds["tmdb"] = parts[1];
+            }
+
+            else if (parts.Length == 1 || string.Equals(parts[0], "episode", StringComparison.OrdinalIgnoreCase))
+            {
+                result.ProviderIds["tmdb"] = parts.Last();
             }
         }
 
