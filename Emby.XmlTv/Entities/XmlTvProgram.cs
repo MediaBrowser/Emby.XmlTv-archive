@@ -16,6 +16,7 @@ namespace Emby.XmlTv.Entities
         
         public string Description { get; set; }
         public string ProgramId { get; set; }
+        public string Quality { get; set; }
 
         public List<string> Categories { get; set; }
 

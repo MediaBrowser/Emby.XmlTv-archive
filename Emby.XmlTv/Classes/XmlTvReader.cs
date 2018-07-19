@@ -240,6 +240,9 @@ namespace Emby.XmlTv.Classes
                             case "previously-shown":
                                 ProcessPreviouslyShown(xmlProg, result);
                                 break;
+                            case "quality":
+                                ProcessQuality(xmlProg, result);
+                                break;
                             case "episode-num":
                                 ProcessEpisodeNum(xmlProg, result);
                                 break;
@@ -606,6 +609,7 @@ namespace Emby.XmlTv.Classes
         public void ParseEpisodeDataForXmlTvNs(XmlReader reader, XmlTvProgram result)
         {
             var value = reader.ReadElementContentAsString();
+
             value = value.Replace(" ", "");
 
             // Episode details
@@ -675,6 +679,11 @@ namespace Emby.XmlTv.Classes
                     }
                 }
             }
+        }
+
+        public void ProcessQuality(XmlReader reader, XmlTvProgram result)
+        {
+            result.Quality = reader.ReadElementContentAsString();
         }
 
         public void ProcessPreviouslyShown(XmlReader reader, XmlTvProgram result)
