@@ -273,7 +273,9 @@ namespace Emby.XmlTv.Classes
                                 xmlProg.Skip();
                                 break;
                             case "premiere":
-                                ProcessPremiereNode(xmlProg, result);
+                                result.Premiere = new XmlTvPremiere();
+                                // This was causing data after the premiere node to not be read. Reactivate this and debug if the premiere details are ever needed.
+                                //ProcessPremiereNode(xmlProg, result);
                                 xmlProg.Skip();
                                 break;
                             default:
