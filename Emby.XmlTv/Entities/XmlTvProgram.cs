@@ -8,9 +8,9 @@ namespace Emby.XmlTv.Entities
     {
         public string ChannelId { get; set; }
 
-        public DateTime StartDate { get; set; }
+        public DateTimeOffset StartDate { get; set; }
 
-        public DateTime EndDate { get; set; }
+        public DateTimeOffset EndDate { get; set; }
 
         public string Title { get; set; }
         
@@ -22,12 +22,12 @@ namespace Emby.XmlTv.Entities
 
         public List<string> Countries { get; set; }
 
-        public DateTime? PreviouslyShown { get; set; }
+        public DateTimeOffset? PreviouslyShown { get; set; }
 
         public bool IsPreviouslyShown { get; set; }
         public bool IsNew { get; set; }
 
-        public DateTime? CopyrightDate { get; set; }
+        public DateTimeOffset? CopyrightDate { get; set; }
 
         public XmlTvEpisode Episode { get; set; }
 

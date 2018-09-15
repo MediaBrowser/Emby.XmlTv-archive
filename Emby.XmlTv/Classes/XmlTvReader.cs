@@ -157,8 +157,8 @@ namespace Emby.XmlTv.Classes
         /// <returns></returns>
         public IEnumerable<XmlTvProgram> GetProgrammes(
                     string channelId,
-                    DateTime startDateUtc,
-                    DateTime endDateUtc,
+                    DateTimeOffset startDateUtc,
+                    DateTimeOffset endDateUtc,
                     CancellationToken cancellationToken)
         {
             var list = new List<XmlTvProgram>();
@@ -190,7 +190,7 @@ namespace Emby.XmlTv.Classes
             return list;
         }
 
-        public XmlTvProgram GetProgramme(XmlReader reader, string channelId, DateTime startDateUtc, DateTime endDateUtc)
+        public XmlTvProgram GetProgramme(XmlReader reader, string channelId, DateTimeOffset startDateUtc, DateTimeOffset endDateUtc)
         {
             var result = new XmlTvProgram();
 
@@ -989,7 +989,7 @@ namespace Emby.XmlTv.Classes
             if (string.IsNullOrEmpty(startValue))
             {
                 // Log.Error("  programme#{0} doesnt contain a start date", iChannel);
-                result.StartDate = DateTime.MinValue;
+                result.StartDate = DateTimeOffset.MinValue;
             }
             else
             {
@@ -1001,7 +1001,7 @@ namespace Emby.XmlTv.Classes
             if (string.IsNullOrEmpty(endValue))
             {
                 // Log.Error("  programme#{0} doesnt contain an end date", iChannel);
-                result.EndDate = DateTime.MinValue;
+                result.EndDate = DateTimeOffset.MinValue;
             }
             else
             {
@@ -1011,7 +1011,7 @@ namespace Emby.XmlTv.Classes
 
         public static Regex _regDateWithOffset = new Regex(@"^(?<dateDigits>[0-9]{4,14})(\s(?<dateOffset>[+-]*[0-9]{1,4}))?$");
 
-        public DateTime? ParseDate(string dateValue)
+        public DateTimeOffset? ParseDate(string dateValue)
         {
             /*
             All dates and times in this DTD follow the same format, loosely based
@@ -1022,7 +1022,7 @@ namespace Emby.XmlTv.Classes
             '200007281733 BST', '200209', '19880523083000 +0300'.  (BST == +0100.)
             */
 
-            DateTime? result = null;
+            DateTimeOffset? result = null;
 
             if (!string.IsNullOrEmpty(dateValue))
             {
@@ -1058,7 +1058,7 @@ namespace Emby.XmlTv.Classes
                 DateTimeOffset parsedDateTime;
                 if (DateTimeOffset.TryParseExact(standardDate, "yyyyMMddHHmmss zzz", CultureInfo.CurrentCulture, DateTimeStyles.None, out parsedDateTime))
                 {
-                    return parsedDateTime.UtcDateTime;
+                    return parsedDateTime.ToUniversalTime();
                 }
                 else
                 {

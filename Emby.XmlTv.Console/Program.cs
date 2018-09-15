@@ -27,7 +27,7 @@ namespace Emby.XmlTv.Console
 
             var resultsFile = String.Format("C:\\Temp\\{0}_Results_{1:HHmmss}.txt", 
                 Path.GetFileNameWithoutExtension(filename),
-                DateTime.UtcNow);
+                DateTimeOffset.UtcNow);
 
             System.Console.Write("Enter the language required: ");
             var lang = System.Console.ReadLine();
@@ -86,8 +86,8 @@ namespace Emby.XmlTv.Console
         {
             //var startDate = new DateTime(2015, 11, 28);
             //var endDate = new DateTime(2015, 11, 29);
-            var startDate = DateTime.MinValue;
-            var endDate = DateTime.MaxValue;
+            var startDate = DateTimeOffset.MinValue;
+            var endDate = DateTimeOffset.MaxValue;
 
             var count = 0;
 
