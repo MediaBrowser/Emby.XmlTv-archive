@@ -37,7 +37,7 @@ namespace Emby.XmlTv.Entities
 
         public float? StarRating { get; set; }
 
-        public XmlTvIcon Icon { get; set; }
+        public List<XmlTvIcon> Icons { get; set; }
 
         public XmlTvPremiere Premiere { get; set; }
 
@@ -53,6 +53,7 @@ namespace Emby.XmlTv.Entities
 
             ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             SeriesProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            Icons = new List<XmlTvIcon>();
         }
 
         public bool Equals(XmlTvProgram other)

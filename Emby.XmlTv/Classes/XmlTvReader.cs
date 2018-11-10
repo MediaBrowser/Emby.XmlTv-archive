@@ -269,8 +269,14 @@ namespace Emby.XmlTv.Classes
                                 }
                                 break;
                             case "icon":
-                                result.Icon = ProcessIconNode(xmlProg);
-                                xmlProg.Skip();
+                                {
+                                    var icon = ProcessIconNode(xmlProg);
+                                    if (icon != null)
+                                    {
+                                        result.Icons.Add(icon);
+                                    }
+                                    xmlProg.Skip();
+                                }
                                 break;
                             case "premiere":
                                 result.Premiere = new XmlTvPremiere();
@@ -791,7 +797,6 @@ namespace Emby.XmlTv.Classes
             if (!String.IsNullOrEmpty(widthString) && Int32.TryParse(widthString, out width))
             {
                 result.Width = width;
-                isPopulated = true;
             }
 
             var heightString = reader.GetAttribute("height");
@@ -799,7 +804,6 @@ namespace Emby.XmlTv.Classes
             if (!String.IsNullOrEmpty(heightString) && Int32.TryParse(heightString, out height))
             {
                 result.Height = height;
-                isPopulated = true;
             }
 
             return isPopulated ? result : null;

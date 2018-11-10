@@ -50,7 +50,9 @@ namespace Emby.XmlTv.Console.Classes
             builder.AppendFormat("Previously Shown:  {0:G}\r\n", programme.PreviouslyShown);
             builder.AppendFormat("Copyright Date:    {0:G}\r\n", programme.CopyrightDate);
             builder.AppendFormat("Is Repeat:         {0}\r\n", programme.IsPreviouslyShown);
-            builder.AppendFormat("Icon:              {0}\r\n", programme.Icon != null ? programme.Icon.ToString() : string.Empty);
+
+            var icon = programme.Icons.FirstOrDefault();
+            builder.AppendFormat("Icon:              {0}\r\n", icon != null ? icon.ToString() : string.Empty);
             builder.AppendLine("-------------------------------------------------------");
             return builder.ToString();
         }
